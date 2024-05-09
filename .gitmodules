@@ -1,0 +1,15 @@
+[submodule "SDL/sdl12-compat"]
+	path = SDL/sdl12-compat
+	url = https://github.com/libsdl-org/sdl12-compat
+[submodule "SDL/SDL_mixer"]
+	path = SDL/SDL_mixer
+	url = https://github.com/libsdl-org/SDL_mixer
+[submodule "SDL/SDL_ttf"]
+	path = SDL/SDL_ttf
+	url = https://github.com/libsdl-org/SDL_ttf
+[submodule "SDL/SDL_image"]
+	path = SDL/SDL_image
+	url = https://github.com/libsdl-org/SDL_image
+[submodule "SDL/SDL_sound"]
+	path = SDL/SDL_sound
+	url = https://github.com/icculus/SDL_sound
