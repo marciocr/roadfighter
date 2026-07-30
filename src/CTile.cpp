@@ -23,9 +23,9 @@
 #include "stdio.h"
 #include "string.h"
 
-#include "SDL.h"
-#include "SDL_ttf.h"
-#include "SDL_image.h"
+#include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
+#include <SDL3_image/SDL_image.h>
 #include "sge/sge.h"
 
 #include "CTile.h"

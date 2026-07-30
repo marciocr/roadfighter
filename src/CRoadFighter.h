@@ -131,7 +131,13 @@ private:
 
 	bool playing_reachedend;
 
-	unsigned char *keyboard,old_keyboard[SDLK_LAST];
+	/* SDL3: SDLK_LAST não existe mais. O array de estado do teclado agora
+	   é indexado por SCANCODE (posição física da tecla), não por KEYCODE
+	   (símbolo/significado), e SDL_SCANCODE_COUNT é o tamanho fixo desse
+	   array. Trocamos para bool* porque é isso que SDL_GetKeyboardState
+	   retorna no SDL3 (antes era unsigned char* no SDL1.2/2). */
+	const bool *keyboard;
+	bool old_keyboard[SDL_SCANCODE_COUNT];
 
 	TTF_Font *font1;
 	TTF_Font *font2big,*font2medium,*font2small;

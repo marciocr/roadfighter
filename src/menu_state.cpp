@@ -31,9 +31,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "math.h"
-#include "SDL.h"
-#include "SDL_ttf.h"
-#include "SDL_mixer.h"
+#include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
+#include <SDL3_mixer/SDL_mixer.h>
 
 #include "sound.h"
 
@@ -93,23 +93,23 @@ int CRoadFighter::menu_cycle(void)
 			int i;
 			bool found=false;
 
-			for(i=0;!found && i<SDLK_LAST;i++) {
+			for(i=0;!found && i<SDL_SCANCODE_COUNT;i++) {
 				if (keyboard[i] && !old_keyboard[i]) {
-					if ((SDLKey)i!=SDLK_ESCAPE &&
-						(SDLKey)i!=SDLK_F12) {
+					if ((SDL_Scancode)i!=SDL_SCANCODE_ESCAPE &&
+						(SDL_Scancode)i!=SDL_SCANCODE_F12) {
 						switch(menu_redefining_key) {
-						case 0:if (i!=left_key && i!=fire_key) right_key=(SDLKey)i;
+						case 0:if (i!=left_key && i!=fire_key) right_key=(SDL_Scancode)i;
 							   break;
-						case 1:if (i!=right_key && i!=fire_key) left_key=(SDLKey)i;
+						case 1:if (i!=right_key && i!=fire_key) left_key=(SDL_Scancode)i;
 							   break;
-						case 2:if (i!=right_key && i!=left_key) fire_key=(SDLKey)i;
+						case 2:if (i!=right_key && i!=left_key) fire_key=(SDL_Scancode)i;
 							   break;
 
-						case 3:if (i!=left2_key && i!=fire2_key) right2_key=(SDLKey)i;
+						case 3:if (i!=left2_key && i!=fire2_key) right2_key=(SDL_Scancode)i;
 							   break;
-						case 4:if (i!=right2_key && i!=fire2_key) left2_key=(SDLKey)i;
+						case 4:if (i!=right2_key && i!=fire2_key) left2_key=(SDL_Scancode)i;
 							   break;
-						case 5:if (i!=right2_key && i!=left2_key) fire2_key=(SDLKey)i;
+						case 5:if (i!=right2_key && i!=left2_key) fire2_key=(SDL_Scancode)i;
 							   break;
 						} /* switch */ 
 					} /* if */ 
@@ -118,11 +118,11 @@ int CRoadFighter::menu_cycle(void)
 				} /* if */ 
 			} /* for */ 
 		} else {
-			if (keyboard[SDLK_DOWN] && !old_keyboard[SDLK_DOWN]) {
+			if (keyboard[SDL_SCANCODE_DOWN] && !old_keyboard[SDL_SCANCODE_DOWN]) {
 				Sound_play(S_menu_move);
 				menu_item++;
 			} /* if */ 
-			if (keyboard[SDLK_UP] && !old_keyboard[SDLK_UP]) {
+			if (keyboard[SDL_SCANCODE_UP] && !old_keyboard[SDL_SCANCODE_UP]) {
 				Sound_play(S_menu_move);
 				menu_item--;
 			} /* if */ 
@@ -130,12 +130,12 @@ int CRoadFighter::menu_cycle(void)
 			if (menu_item>menu_nitems-1) menu_item=menu_nitems-1;
 
 			if ((keyboard[fire_key] && !old_keyboard[fire_key]) ||
-				(keyboard[SDLK_SPACE] && !old_keyboard[SDLK_SPACE]) ||
+				(keyboard[SDL_SCANCODE_SPACE] && !old_keyboard[SDL_SCANCODE_SPACE]) ||
 				(keyboard[right_key] && !old_keyboard[right_key]) ||
 				(keyboard[left_key] && !old_keyboard[left_key]) ||
-				(keyboard[SDLK_ESCAPE] && !old_keyboard[SDLK_ESCAPE])) {
+				(keyboard[SDL_SCANCODE_ESCAPE] && !old_keyboard[SDL_SCANCODE_ESCAPE])) {
 				if ((keyboard[left_key] && !old_keyboard[left_key]) ||
-					(keyboard[SDLK_ESCAPE] && !old_keyboard[SDLK_ESCAPE])) {
+					(keyboard[SDL_SCANCODE_ESCAPE] && !old_keyboard[SDL_SCANCODE_ESCAPE])) {
 					menu_item=menu_nitems-1;
 				} /* if */ 
 
@@ -380,9 +380,9 @@ int CRoadFighter::menu_cycle(void)
 			strcpy(menu_tittle_text,"PLAYER 1:");
 			delete menu_options_text;
 			sprintf(tmp,"RIGHT : %s\nLEFT : %s\nFIRE : %s\nBACK\n",
-					(menu_redefining_key==0 ? "":strupr(SDL_GetKeyName((SDLKey)right_key))),
-					(menu_redefining_key==1 ? "":strupr(SDL_GetKeyName((SDLKey)left_key))),
-					(menu_redefining_key==2 ? "":strupr(SDL_GetKeyName((SDLKey)fire_key))));
+					(menu_redefining_key==0 ? "":strupr(SDL_GetKeyName((SDL_Scancode)right_key))),
+					(menu_redefining_key==1 ? "":strupr(SDL_GetKeyName((SDL_Scancode)left_key))),
+					(menu_redefining_key==2 ? "":strupr(SDL_GetKeyName((SDL_Scancode)fire_key))));
 			menu_options_text=new char[strlen(tmp)+1];
 			strcpy(menu_options_text,tmp);
 			menu_nitems=4;
@@ -394,9 +394,9 @@ int CRoadFighter::menu_cycle(void)
 			strcpy(menu_tittle_text,"PLAYER 2:");
 			delete menu_options_text;
 			sprintf(tmp,"RIGHT : %s\nLEFT : %s\nFIRE : %s\nBACK\n",
-					(menu_redefining_key==3 ? "":strupr(SDL_GetKeyName((SDLKey)right2_key))),
-					(menu_redefining_key==4 ? "":strupr(SDL_GetKeyName((SDLKey)left2_key))),
-					(menu_redefining_key==5 ? "":strupr(SDL_GetKeyName((SDLKey)fire2_key))));
+					(menu_redefining_key==3 ? "":strupr(SDL_GetKeyName((SDL_Scancode)right2_key))),
+					(menu_redefining_key==4 ? "":strupr(SDL_GetKeyName((SDL_Scancode)left2_key))),
+					(menu_redefining_key==5 ? "":strupr(SDL_GetKeyName((SDL_Scancode)fire2_key))));
 			menu_options_text=new char[strlen(tmp)+1];
 			strcpy(menu_options_text,tmp);
 			menu_nitems=4;

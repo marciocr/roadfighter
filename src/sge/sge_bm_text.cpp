@@ -21,7 +21,7 @@
 *  Thanks to Karl Bartel for the SFont format!
 */
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 #include <stdarg.h>
 #include <string.h>
 #include <math.h>

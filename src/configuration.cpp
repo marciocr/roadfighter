@@ -20,10 +20,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "SDL.h"
-#include "SDL_mixer.h"
-#include "SDL_image.h"
-#include "SDL_ttf.h"
+#include <SDL3/SDL.h>
+#include <SDL3_mixer/SDL_mixer.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
 #include "sound.h"
 
@@ -90,13 +90,13 @@ void CRoadFighter::save_configuration(void)
 
 void CRoadFighter::default_configuration(void)
 {
-	left_key=SDLK_LEFT;
-	right_key=SDLK_RIGHT;
-	fire_key=SDLK_SPACE;
+	left_key=SDL_SCANCODE_LEFT;
+	right_key=SDL_SCANCODE_RIGHT;
+	fire_key=SDL_SCANCODE_SPACE;
 
-	left2_key=SDLK_a;
-	right2_key=SDLK_d;
-	fire2_key=SDLK_LSHIFT;
+	left2_key=SDL_SCANCODE_A;
+	right2_key=SDL_SCANCODE_D;
+	fire2_key=SDL_SCANCODE_LSHIFT;
 
 	game_remake_extras=true;
 } /* CRoadFighter::default_configuration */ 

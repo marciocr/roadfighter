@@ -28,9 +28,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "SDL.h"
-#include "SDL_ttf.h"
-#include "SDL_mixer.h"
+#include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
+#include <SDL3_mixer/SDL_mixer.h>
 
 #include "sound.h"
 
@@ -43,10 +43,10 @@
 #include "debug.h"
 
 
-/*						GLOBAL VARIABLES INITIALIZATION:							*/ 
+/*						GLOBAL VARIABLES INITIALIZATION:						*/
 
-const int REDRAWING_PERIOD=27;	/* This is for 35fps */ 
-// const int REDRAWING_PERIOD=40;	/* This is for 25fps */ 
+const int REDRAWING_PERIOD=27;	/* This is for 35fps */
+// const int REDRAWING_PERIOD=40;	/* This is for 25fps */
 
 int SCREEN_X=512;
 int SCREEN_Y=384;
@@ -60,68 +60,88 @@ bool fullscreen=false;
 #endif
 
 int init_time=0;
+
+/* SDL3: nao existe mais uma unica "superficie de video" global obtida
+   implicitamente. Agora a janela e a superficie sao objetos separados
+   e explicitos: SDL_Window* para a janela, e SDL_Surface* obtida a
+   partir dela via SDL_GetWindowSurface(). Mantemos screen_sfc (usado
+   em outros arquivos, ex: CRoadFighter.cpp) e adicionamos main_window. */
+SDL_Window *main_window=0;
 SDL_Surface *screen_sfc;
 CRoadFighter *game=0;
-int screen_flags= /* SDL_GLSDL | SDL_DOUBLEBUF | */ 
-				  /* SDL_HWSURFACE | SDL_DOUBLEBUF | */ 
-				  0;
+
+/* SDL3: as antigas flags SDL_HWSURFACE/SDL_DOUBLEBUF eram sobre a
+   superficie de software do SDL1.2/2 e nao existem mais. O que resta
+   configuravel na criacao da janela agora e coisa como
+   SDL_WINDOW_FULLSCREEN, SDL_WINDOW_RESIZABLE, etc. */
+Uint64 screen_flags = 0;
 
 int start_level=1;
 
 
-/*						AUXILIAR FUNCTION DEFINITION:							*/ 
+/*						AUXILIAR FUNCTION DEFINITION:							*/
 
-SDL_Surface* initializeSDL(int moreflags)
+SDL_Surface* initializeSDL(Uint64 moreflags)
 {
-	char VideoName[256];
-	SDL_Surface *screen;
+	Uint64 flags = screen_flags|moreflags;
 
-	//int flags = SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_HWPALETTE;
-	int flags = screen_flags|moreflags;
-	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO)<0) return 0;
+	/* SDL3: SDL_Init retorna bool (true=sucesso), nao mais 0/-1. */
+	if (!SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO)) return 0;
 
 	output_debug_message("Initializing SDL video subsystem.\n");
-	if ((SDL_Init(SDL_INIT_VIDEO)) == -1)
+	if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
 	{
 	  output_debug_message("Couldn't initialize video subsystem: %s\n", SDL_GetError());
 	  exit(-1);
 	}
-	SDL_VideoDriverName (VideoName, sizeof (VideoName));
-    output_debug_message("SDL driver used: %s\n", VideoName);
-    // Set the environment variable SDL_VIDEODRIVER to override
-    // For Linux: x11 (default), dga, fbcon, directfb, svgalib,
-    //            ggi, aalib
-    // For Windows: directx (default), windib
+	/* SDL3: SDL_VideoDriverName foi removido; o equivalente atual e
+	   SDL_GetCurrentVideoDriver(), que ja devolve a string (sem precisar
+	   de buffer proprio). */
+	output_debug_message("SDL driver used: %s\n", SDL_GetCurrentVideoDriver());
 	output_debug_message("SDL video subsystem initialized.\n");
 
 	atexit(SDL_Quit);
-	SDL_WM_SetCaption(application_name, 0);
-	if (fullscreen) SDL_ShowCursor(SDL_DISABLE);
+
 	Sound_initialization();
 
-	pause(1000);
+	SDL_Delay(1000);
 
-	screen = SDL_SetVideoMode(SCREEN_X, SCREEN_Y, COLOUR_DEPTH, flags);
+	/* SDL3: SDL_SetVideoMode (que criava E retornava a superficie de tela
+	   em um so passo) foi substituido por dois passos explicitos:
+	   1) criar a janela com SDL_CreateWindow
+	   2) pegar a superficie de desenho da janela com SDL_GetWindowSurface
+	   COLOUR_DEPTH tambem deixou de existir como parametro: o formato de
+	   pixel da janela agora e escolhido pelo sistema/driver. */
+	main_window = SDL_CreateWindow(application_name, SCREEN_X, SCREEN_Y, flags);
+	if (main_window == 0) {
+		output_debug_message("Couldn't create window: %s\n", SDL_GetError());
+		exit(-1);
+	}
+	if (fullscreen) SDL_HideCursor();
+
+	SDL_Surface *screen = SDL_GetWindowSurface(main_window);
 
 	if (screen == NULL) {
-		output_debug_message("Couldn't set %ix%ix%i", SCREEN_X, SCREEN_Y, COLOUR_DEPTH);
+		output_debug_message("Couldn't get window surface (%ix%i)", SCREEN_X, SCREEN_Y);
 	    if (fullscreen) output_debug_message(",fullscreen,");
 	    output_debug_message(" video mode: %s\n",SDL_GetError ());
 	    exit(-1);
 	} else {
 	    output_debug_message("Set the video resolution to: %ix%ix%i",
-				 SDL_GetVideoSurface()->w, SDL_GetVideoSurface()->h,
-				 SDL_GetVideoSurface()->format->BitsPerPixel);
+			 screen->w, screen->h,
+			 SDL_BITSPERPIXEL(screen->format));
 	    if (fullscreen) output_debug_message(",fullscreen");
 	    output_debug_message("\n");
-    } /* if */ 
+    } /* if */
 
 	TTF_Init();
 
-	SDL_EnableUNICODE(1);
-	
+	/* SDL3: SDL_EnableUNICODE nao existe mais. A entrada de texto Unicode
+	   agora e sempre entregue via SDL_EVENT_TEXT_INPUT quando
+	   SDL_StartTextInput(window) e chamado; nao e mais uma flag global. */
+
 	return screen;
-} /* initializeSDL */ 
+} /* initializeSDL */
 
 
 void finalizeSDL()
@@ -129,7 +149,7 @@ void finalizeSDL()
 	TTF_Quit();
 //	Sound_release();
 	SDL_Quit();
-} /* finalizeSDL */ 
+} /* finalizeSDL */
 
 
 
@@ -142,7 +162,7 @@ int PASCAL WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		if (1==sscanf(lpCmdLine,"%i",&tmp)) {
 			start_level=tmp;
 			if (start_level<1 || start_level>6) start_level=1;
-		} /* if */ 
+		} /* if */
 	}
 
 #else
@@ -156,7 +176,7 @@ int main(int argc, char** argv)
 			1==sscanf(argv[1],"%i",&tmp)) {
 			start_level=tmp;
 			if (start_level<1 || start_level>6) start_level=1;
-		} /* if */ 
+		} /* if */
 	}
 #endif
 
@@ -166,7 +186,7 @@ int main(int argc, char** argv)
 
 
 	time=init_time=GetTickCount();
-	screen_sfc = initializeSDL((fullscreen ? SDL_FULLSCREEN : 0));
+	screen_sfc = initializeSDL((fullscreen ? SDL_WINDOW_FULLSCREEN : 0));
 	if (screen_sfc==0) return 0;
 
 	game=new CRoadFighter();
@@ -174,25 +194,35 @@ int main(int argc, char** argv)
 	while (!quit) {
 		while( SDL_PollEvent( &event ) ) {
             switch( event.type ) {
-                /* Keyboard event */ 
-                case SDL_KEYDOWN:
+                /* Keyboard event */
+                /* SDL3: o tipo de evento agora e SDL_EVENT_KEY_DOWN (era
+                   SDL_KEYDOWN), e os campos do teclado ficaram "achatados"
+                   direto em event.key: nao existe mais o struct aninhado
+                   event.key.keysym. Tambem: event.key.keysym.sym virou
+                   event.key.key (keycode virtual) -- usamos aqui porque
+                   os atalhos abaixo dependem do simbolo (F12, F4, etc),
+                   nao da posicao fisica da tecla. */
+                case SDL_EVENT_KEY_DOWN:
 					// quit
-					if (event.key.keysym.sym==SDLK_F12) {
+					if (event.key.key==SDLK_F12) {
 						quit = true;
 					}
-					if (event.key.keysym.sym==SDLK_F4) {
-						SDLMod modifiers;
+					if (event.key.key==SDLK_F4) {
+						/* SDL3: SDLMod virou SDL_Keymod, e KMOD_ALT virou
+						   SDL_KMOD_ALT (prefixo SDL_ adicionado em toda a
+						   familia de constantes de modificador). */
+						SDL_Keymod modifiers;
 						modifiers=SDL_GetModState();
-						if ((modifiers&KMOD_ALT)!=0) {
+						if ((modifiers&SDL_KMOD_ALT)!=0) {
 							quit=true;
 						}
 					}
 #ifdef __APPLE__
                     // different quit shortcut on OSX: apple+Q
-                    if (event.key.keysym.sym == SDLK_q) {
-                        SDLMod modifiers;
+                    if (event.key.key == SDLK_Q) {
+                        SDL_Keymod modifiers;
                         modifiers = SDL_GetModState();
-                        if ((modifiers&KMOD_META) != 0) {
+                        if ((modifiers&SDL_KMOD_GUI) != 0) {
                             quit = true;
                         }
                     }
@@ -203,62 +233,55 @@ FIXME: the code below is a big copy/paste; it should be in a separate function i
 */
 
 #ifdef __APPLE__
-					if (event.key.keysym.sym == SDLK_f) {
-						SDLMod modifiers;
+					if (event.key.key == SDLK_F) {
+						SDL_Keymod modifiers;
 
 						modifiers=SDL_GetModState();
 
-						if ((modifiers&KMOD_META) != 0) {
+						if ((modifiers&SDL_KMOD_GUI) != 0) {
 							Stop_playback();
-							/* Toogle FULLSCREEN mode: */ 
+							/* Toogle FULLSCREEN mode: */
 							if (fullscreen) fullscreen=false;
-									   else fullscreen=true;
-							SDL_QuitSubSystem(SDL_INIT_VIDEO);
-							SDL_InitSubSystem(SDL_INIT_VIDEO);
-							if (SDL_WasInit(SDL_INIT_VIDEO)) {
-								screen_sfc = SDL_SetVideoMode(SCREEN_X, SCREEN_Y, COLOUR_DEPTH, 
-															  (fullscreen ? SDL_FULLSCREEN : 0) | screen_flags);
-								SDL_WM_SetCaption(application_name, 0);
-								SDL_ShowCursor(SDL_DISABLE);
-							} else {
-								quit = true;
-							} /* if */ 
+										   else fullscreen=true;
+							/* SDL3: em vez de derrubar e reerguer o
+							   subsistema de video inteiro (o que tambem
+							   destruiria a janela), o jeito idiomatico de
+							   alternar fullscreen agora e chamar
+							   SDL_SetWindowFullscreen na janela existente. */
+							SDL_SetWindowFullscreen(main_window, fullscreen);
+							screen_sfc = SDL_GetWindowSurface(main_window);
+							if (fullscreen) SDL_HideCursor(); else SDL_ShowCursor();
 							Resume_playback();
-						} /* if */ 
-					} /* if */ 
+						} /* if */
+					} /* if */
 #endif
-					
-					if (event.key.keysym.sym==SDLK_RETURN) {
-						SDLMod modifiers;
+
+					if (event.key.key==SDLK_RETURN) {
+						SDL_Keymod modifiers;
 
 						modifiers=SDL_GetModState();
 
-						if ((modifiers&KMOD_ALT)!=0) {
+						if ((modifiers&SDL_KMOD_ALT)!=0) {
 							Stop_playback();
-							/* Toogle FULLSCREEN mode: */ 
+							/* Toogle FULLSCREEN mode: */
 							if (fullscreen) fullscreen=false;
-									   else fullscreen=true;
-							SDL_QuitSubSystem(SDL_INIT_VIDEO);
-							SDL_InitSubSystem(SDL_INIT_VIDEO);
-							if (SDL_WasInit(SDL_INIT_VIDEO)) {
-								screen_sfc = SDL_SetVideoMode(SCREEN_X, SCREEN_Y, COLOUR_DEPTH, 
-															  (fullscreen ? SDL_FULLSCREEN : 0) | screen_flags);
-								SDL_WM_SetCaption(application_name, 0);
-								SDL_ShowCursor(SDL_DISABLE);
-							} else {
-								quit = true;
-							} /* if */ 
+										   else fullscreen=true;
+							SDL_SetWindowFullscreen(main_window, fullscreen);
+							screen_sfc = SDL_GetWindowSurface(main_window);
+							if (fullscreen) SDL_HideCursor(); else SDL_ShowCursor();
 							Resume_playback();
-						} /* if */ 
-					} /* if */ 
+						} /* if */
+					} /* if */
                     break;
 
-                /* SDL_QUIT event (window close) */ 
-                case SDL_QUIT:
+                /* SDL_EVENT_QUIT (window close). SDL3 renomeou SDL_QUIT
+                   para SDL_EVENT_QUIT, seguindo o novo padrao de nomes
+                   SDL_EVENT_* para todo tipo de evento. */
+                case SDL_EVENT_QUIT:
                     quit = true;
                     break;
-            } /* switch */ 
-        } /* while */ 
+            } /* switch */
+        } /* while */
 
 		act_time=GetTickCount();
 		if (act_time-time>=REDRAWING_PERIOD) {
@@ -266,12 +289,16 @@ FIXME: the code below is a big copy/paste; it should be in a separate function i
 
 			time+=REDRAWING_PERIOD;
 			if ((act_time-time)>2*REDRAWING_PERIOD) time=act_time;
-		
-			if (!game->cycle()) quit=true;	
-			SDL_SetClipRect(screen_sfc, 0);
+
+			if (!game->cycle()) quit=true;
+			SDL_SetSurfaceClipRect(screen_sfc, 0);
 			game->draw(screen_sfc);
-			SDL_Flip(screen_sfc);
-		} /* if */ 
+			/* SDL3: SDL_Flip() foi substituido por
+			   SDL_UpdateWindowSurface(window), ja que a superficie
+			   agora pertence explicitamente a janela, nao a um
+			   "video global" implicito. */
+			SDL_UpdateWindowSurface(main_window);
+		} /* if */
 		SDL_Delay(1);
 	}
 
@@ -280,6 +307,4 @@ FIXME: the code below is a big copy/paste; it should be in a separate function i
 	finalizeSDL();
 
 	return 0;
-} /* main */ 
-
-
+} /* main */

@@ -20,9 +20,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "SDL.h"
-#include "SDL_ttf.h"
-#include "SDL_mixer.h"
+#include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
+#include <SDL3_mixer/SDL_mixer.h>
 
 #include "time.h"
 
@@ -63,7 +63,7 @@ int CRoadFighter::playing_cycle(void)
 
 	if (record_replay) {
 		int i;
-		for(i=0;i<SDLK_LAST;i++) {
+		for(i=0;i<SDL_SCANCODE_COUNT;i++) {
 			if (keyboard[i] && !old_keyboard[i]) fprintf(replay_fp,"1 %i\n",i);
 			if (!keyboard[i] && old_keyboard[i]) fprintf(replay_fp,"0 %i\n",i);
 		} /* for */ 

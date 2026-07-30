@@ -20,9 +20,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "SDL.h"
-#include "SDL_ttf.h"
-#include "SDL_mixer.h"
+#include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
+#include <SDL3_mixer/SDL_mixer.h>
 
 #include "sound.h"
 
@@ -59,7 +59,7 @@ int CRoadFighter::gameover_cycle(void)
 		(state_timmer>=gameover_time*6 ||
 		 (state_timmer>=gameover_time &&
 		 ((keyboard[fire_key] && !old_keyboard[fire_key]) ||
-		  (keyboard[SDLK_ESCAPE] && !old_keyboard[SDLK_ESCAPE]))))) {
+		  (keyboard[SDL_SCANCODE_ESCAPE] && !old_keyboard[SDL_SCANCODE_ESCAPE]))))) {
 		gameover_state=1;
 		if (gameover_timmer>=gameover_time) gameover_timmer=gameover_time;
 	} /* if */ 

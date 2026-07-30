@@ -20,10 +20,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "SDL.h"
-#include "SDL_mixer.h"
-#include "SDL_image.h"
-#include "SDL_ttf.h"
+#include <SDL3/SDL.h>
+#include <SDL3_mixer/SDL_mixer.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
 #include "sound.h"
 
@@ -38,6 +38,12 @@
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
 extern int MAX_SPEED;
+
+/* SDL3: SDL_DisplayFormat() não existe mais (não há mais um "formato da
+   tela" global e implícito). O equivalente é converter explicitamente
+   pra o mesmo formato de pixel da superfície da janela, usando
+   SDL_ConvertSurface. Por isso precisamos enxergar screen_sfc aqui. */
+extern SDL_Surface *screen_sfc;
 extern int MAX_FUEL;
 extern int SCREEN_X;
 extern int SCREEN_Y;
@@ -77,7 +83,7 @@ CRoadFighter::CRoadFighter(void)
 	scoreboard_x=-1;
 	desired_scoreboard_x=SCREEN_X;
 
-	for(i=0;i<SDLK_LAST;i++) old_keyboard[i]=0;
+	for(i=0;i<SDL_SCANCODE_COUNT;i++) old_keyboard[i]=0;
 
 	font1=TTF_OpenFont("/usr/share/fonts/truetype/dejavu/DejaVuSerif-Italic.ttf", 12);
 	font2big=TTF_OpenFont("/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf", 21);
@@ -122,15 +128,15 @@ CRoadFighter::CRoadFighter(void)
 	{
 		SDL_Surface *sfc;
 
-		sfc = SDL_DisplayFormat(konami1_sfc);
+		sfc = SDL_ConvertSurface(konami1_sfc, screen_sfc->format);
 		SDL_FreeSurface(konami1_sfc);
 		konami1_sfc=sfc;
 
-		sfc = SDL_DisplayFormat(konami2_sfc);
+		sfc = SDL_ConvertSurface(konami2_sfc, screen_sfc->format);
 		SDL_FreeSurface(konami2_sfc);
 		konami2_sfc=sfc;
 
-		sfc = SDL_DisplayFormat(tittle_sfc);
+		sfc = SDL_ConvertSurface(tittle_sfc, screen_sfc->format);
 		SDL_FreeSurface(tittle_sfc);
 		tittle_sfc=sfc;
 
@@ -199,7 +205,7 @@ bool CRoadFighter::cycle(void)
 {
 	int i,old_state=state;
 	bool retval=true;
-	keyboard = (unsigned char *)SDL_GetKeyState(NULL);;
+	keyboard = SDL_GetKeyboardState(NULL);
 
 	switch(state) {
 	case PRESENTATION_STATE:state=presentation_cycle();
@@ -223,7 +229,7 @@ bool CRoadFighter::cycle(void)
 	if (state!=old_state) state_timmer=0;
 				 	 else state_timmer++;
 
-	for(i=0;i<SDLK_LAST;i++) old_keyboard[i]=keyboard[i];
+	for(i=0;i<SDL_SCANCODE_COUNT;i++) old_keyboard[i]=keyboard[i];
 	
 	return retval;
 } /* CRoadFighter::cycle */ 

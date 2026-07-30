@@ -20,9 +20,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "SDL.h"
-#include "SDL_ttf.h"
-#include "SDL_mixer.h"
+#include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
+#include <SDL3_mixer/SDL_mixer.h>
 
 #include "sound.h"
 
@@ -51,7 +51,7 @@ int CRoadFighter::presentation_cycle(void)
 
 	key_pressed=false;
 	if (state_timmer>=5) {
-		for(i=0;i<SDLK_LAST;i++) {
+		for(i=0;i<SDL_SCANCODE_COUNT;i++) {
 			if (keyboard[i] && !old_keyboard[i]) key_pressed=true;
 		} /* for */ 
 	} /* if */ 

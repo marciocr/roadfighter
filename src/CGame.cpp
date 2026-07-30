@@ -22,10 +22,10 @@
 #include "stdlib.h"
 #include "math.h"
 
-#include "SDL.h"
-#include "SDL_ttf.h"
-#include "SDL_image.h"
-#include "SDL_mixer.h"
+#include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_mixer/SDL_mixer.h>
 
 #include "sound.h"
 
@@ -436,7 +436,7 @@ bool CGame::cycle(unsigned char *keyboard,unsigned char *old_keyboard)
 	List<CObject> l;
 	CObject *o;
 
-	if (keyboard[SDLK_F1] && !old_keyboard[SDLK_F1]) {
+	if (keyboard[SDL_SCANCODE_F1] && !old_keyboard[SDL_SCANCODE_F1]) {
 		if (paused) paused=false;
 			   else paused=true;
 	} /* if */ 
@@ -465,13 +465,13 @@ bool CGame::cycle(unsigned char *keyboard,unsigned char *old_keyboard)
 	} /* if */ 
 
 
-	if (keyboard[SDLK_ESCAPE] && !old_keyboard[SDLK_ESCAPE] && game_state==0) {
+	if (keyboard[SDL_SCANCODE_ESCAPE] && !old_keyboard[SDL_SCANCODE_ESCAPE] && game_state==0) {
 		game_state=1;
 		game_timmer=fade_time;
 		esc_pressed=true;
 	} /* if */ 
 
-	if (keyboard[SDLK_BACKSPACE] && !old_keyboard[SDLK_BACKSPACE] && game_state==0) {
+	if (keyboard[SDL_SCANCODE_BACKSPACE] && !old_keyboard[SDL_SCANCODE_BACKSPACE] && game_state==0) {
 		game_state=1;
 		game_timmer=fade_time;
 		backspace_pressed=true;

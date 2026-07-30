@@ -18,7 +18,7 @@
 #ifndef sge_collision_H
 #define sge_collision_H
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 #include "sge_internal.h"
 
 /* The collision struct */

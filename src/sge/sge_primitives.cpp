@@ -20,7 +20,7 @@
 *  John Garrison's PowerPak	
 */
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 #include <math.h>
 #include <string.h>
 #include <stdarg.h>

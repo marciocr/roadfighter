@@ -18,7 +18,7 @@
  *  version 2 of the License, or (at your option) any later version. *
  *********************************************************************/
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include "sge_surface.h"

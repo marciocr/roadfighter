@@ -20,9 +20,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "SDL.h"
-#include "SDL_ttf.h"
-#include "SDL_mixer.h"
+#include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
+#include <SDL3_mixer/SDL_mixer.h>
 
 #include "sound.h"
 
@@ -47,7 +47,7 @@ int CRoadFighter::konami_cycle(void)
 	if (konami_state==0 && 
 		(state_timmer>=350 ||
 		 (keyboard[fire_key] && !old_keyboard[fire_key]) ||
-		 (keyboard[SDLK_ESCAPE] && !old_keyboard[SDLK_ESCAPE]))) {
+		 (keyboard[SDL_SCANCODE_ESCAPE] && !old_keyboard[SDL_SCANCODE_ESCAPE]))) {
 		konami_state=1;
 		if (konami_timmer>konami_fade_time) konami_timmer=konami_fade_time;
 	} /* if */ 

@@ -20,10 +20,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "SDL.h"
-#include "SDL_image.h"
-#include "SDL_mixer.h"
-#include "SDL_ttf.h"
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_mixer/SDL_mixer.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
 #include "sound.h"
 
@@ -128,7 +128,7 @@ int CRoadFighter::interlevel_cycle(void)
 		if (state_timmer>=interlevel_time*4 ||
 			(interlevel_timmer>=(interlevel_time*2) &&
 			 ((keyboard[fire_key] && !old_keyboard[fire_key]) ||
-			  (keyboard[SDLK_ESCAPE] && !old_keyboard[SDLK_ESCAPE])))) {
+			  (keyboard[SDL_SCANCODE_ESCAPE] && !old_keyboard[SDL_SCANCODE_ESCAPE])))) {
 			output_debug_message("CRoadFighter::interlevel_cycle: going to state 2.\n");
 			interlevel_state=2;
 			if (interlevel_timmer>=interlevel_time) interlevel_timmer=interlevel_time;
@@ -149,7 +149,7 @@ int CRoadFighter::interlevel_cycle(void)
 		if (interlevel_timmer>=interlevel_time*5 ||
 			(interlevel_timmer>=interlevel_time &&
 			 ((keyboard[fire_key] && !old_keyboard[fire_key]) ||
-			  (keyboard[SDLK_ESCAPE] && !old_keyboard[SDLK_ESCAPE])))) {
+			  (keyboard[SDL_SCANCODE_ESCAPE] && !old_keyboard[SDL_SCANCODE_ESCAPE])))) {
 			output_debug_message("CRoadFighter::interlevel_cycle: going to state 4.\n");
 			interlevel_state=4;
 			if (interlevel_timmer>=interlevel_time) interlevel_timmer=interlevel_time;

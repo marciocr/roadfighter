@@ -15,7 +15,7 @@
  *  version 2 of the License, or (at your option) any later version. *
  *********************************************************************/
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 #include <stdio.h>
 #include <string.h>
 #include <new>
