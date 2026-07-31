@@ -53,7 +53,7 @@ CFuelObject::~CFuelObject(void)
 
 
 
-bool CFuelObject::cycle(unsigned char *keyboard,unsigned char *old_keyboard)
+bool CFuelObject::cycle(const bool *keyboard,const bool *old_keyboard)
 {
 	y_precision+=y_speed;
 	while(y_precision>(1<<8)) {

@@ -70,7 +70,7 @@ CObject::~CObject(void)
 
 
 
-bool CObject::cycle(unsigned char *keyboard,unsigned char *old_keyboard)
+bool CObject::cycle(const bool *keyboard,const bool *old_keyboard)
 {
 	return true;
 } /* CObject::cycle */ 
@@ -103,11 +103,7 @@ bool CObject::collision(int offsx,int offsy,CObject *o)
 		tmpx=int((o->draw_x+offsx)-draw_x);
 		tmpy=int((o->draw_y+offsy)-draw_y);
 
-		if (sge_cmcheck(t1->collision_data,0,0,t2->collision_data,tmpx,tmpy)) {
-			tmpx=sge_get_cx();
-			tmpy=sge_get_cy();
-			return true;
-		} /* if */ 
+		if (collision_check(t1->collision_data,0,0,t2->collision_data,tmpx,tmpy)) return true;
 	}
 
 	return false;

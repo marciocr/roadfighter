@@ -51,7 +51,7 @@ CCarObject::~CCarObject(void)
 
 
 
-bool CCarObject::cycle(unsigned char *keyboard,unsigned char *old_keyboard)
+bool CCarObject::cycle(const bool *keyboard,const bool *old_keyboard)
 {
 	y_precision+=y_speed;
 	while(y_precision>(1<<8)) {

@@ -36,6 +36,12 @@
 #include "auxiliar.h"
 #include "List.h"
 
+/* SDL3: SDL_DisplayFormat(Alpha)() nao existe mais; o substituto e
+   converter explicitamente para o formato de pixel da janela via
+   SDL_ConvertSurface, entao precisamos enxergar screen_sfc aqui
+   (mesma solucao ja usada em CRoadFighter.cpp). */
+extern SDL_Surface *screen_sfc;
+
 #ifndef _WIN32
 #ifndef HAVE_STRLWR
 
@@ -106,35 +112,36 @@ SDL_Surface *load_maskedimage(char *imagefile,char *maskfile,char *path)
     if (tmp==0 ||
 		mask==0) return mask;
 
-	res=SDL_DisplayFormatAlpha(tmp);
+	res=SDL_ConvertSurface(tmp,screen_sfc->format);
 
-	/* Aplicar la máscara: */ 
+	/* Aplicar la mï¿½scara: */
 	{
 		int x,y;
 		Uint8 r,g,b,a;
 		Uint32 v;
+		const SDL_PixelFormatDetails *res_fmt=SDL_GetPixelFormatDetails(res->format);
 
 		for(y=0;y<mask->h;y++) {
 			for(x=0;x<mask->w;x++) {
 				SDL_LockSurface(res);
 				v=getpixel(res,x,y);
 				SDL_UnlockSurface(res);
-				SDL_GetRGBA(v,res->format,&r,&g,&b,&a);
+				SDL_GetRGBA(v,res_fmt,SDL_GetSurfacePalette(res),&r,&g,&b,&a);
 				SDL_LockSurface(mask);
 				v=getpixel(mask,x,y);
 				SDL_UnlockSurface(mask);
 				if (v!=0) a=255;
 					 else a=0;
-				v=SDL_MapRGBA(res->format,r,g,b,a);
+				v=SDL_MapRGBA(res_fmt,SDL_GetSurfacePalette(res),r,g,b,a);
 				SDL_LockSurface(res);
 				putpixel(res,x,y,v);
 				SDL_UnlockSurface(res);
-			} /* for */ 
-		} /* for */ 
+			} /* for */
+		} /* for */
 	}
 
-	SDL_FreeSurface(tmp);
-	SDL_FreeSurface(mask);
+	SDL_DestroySurface(tmp);
+	SDL_DestroySurface(mask);
 
 	return res;
 } /* load_maskedimage */ 
@@ -143,9 +150,9 @@ SDL_Surface *load_maskedimage(char *imagefile,char *maskfile,char *path)
 void putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 {
 	SDL_Rect clip;
-    int bpp = surface->format->BytesPerPixel;
+    int bpp = SDL_GetPixelFormatDetails(surface->format)->bytes_per_pixel;
 
-	SDL_GetClipRect(surface,&clip);
+	SDL_GetSurfaceClipRect(surface,&clip);
 
 	if (x<clip.x || x>=clip.x+clip.w ||
 		y<clip.y || y>=clip.y+clip.h) return;
@@ -187,11 +194,11 @@ void putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 void maximumpixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 {
 	SDL_Rect clip;
-    int bpp = surface->format->BytesPerPixel;
+    int bpp = SDL_GetPixelFormatDetails(surface->format)->bytes_per_pixel;
 	Uint32 r,g,b,r2,g2,b2;
 	Uint8 *p;
 
-	SDL_GetClipRect(surface,&clip);
+	SDL_GetSurfaceClipRect(surface,&clip);
 
 	if (x<clip.x || x>=clip.x+clip.w ||
 		y<clip.y || y>=clip.y+clip.h) return;
@@ -211,13 +218,13 @@ void maximumpixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 	g=p[GOFFSET];
 	b=p[BOFFSET];
 	
-	*(Uint32 *)p = SDL_MapRGB(surface->format,max(r,r2),max(g,g2),max(b,b2));
+	*(Uint32 *)p = SDL_MapRGB(SDL_GetPixelFormatDetails(surface->format),SDL_GetSurfacePalette(surface),max(r,r2),max(g,g2),max(b,b2));
 }
 
 
 Uint32 getpixel(SDL_Surface *surface, int x, int y)
 {
-    int bpp = surface->format->BytesPerPixel;
+    int bpp = SDL_GetPixelFormatDetails(surface->format)->bytes_per_pixel;
 
 	if (x<0 || x>=surface->w ||
 		y<0 || y>=surface->h) return 0;
@@ -252,7 +259,6 @@ void surface_fader(SDL_Surface *surface,float r_factor,float g_factor,float b_fa
 	int i,x,y,offs;
 	Uint8 rtable[256],gtable[256],btable[256];
 	Uint8 *pixels;
-	SDL_Surface *tmp;
 
 	if (r==0) {
 		r2.x=0;
@@ -262,7 +268,7 @@ void surface_fader(SDL_Surface *surface,float r_factor,float g_factor,float b_fa
 		r=&r2;
 	} /* if */ 
 
-	if (surface->format->BytesPerPixel!=4 ||
+	if (SDL_GetPixelFormatDetails(surface->format)->bytes_per_pixel!=4 ||
 		(r_factor==1.0 &&
 		 g_factor==1.0 &&
 		 b_factor==1.0)) return;
@@ -271,38 +277,25 @@ void surface_fader(SDL_Surface *surface,float r_factor,float g_factor,float b_fa
 		rtable[i]=(Uint8)(i*r_factor);
 		gtable[i]=(Uint8)(i*g_factor);
 		btable[i]=(Uint8)(i*b_factor);
-	} /* for */ 
+	} /* for */
 
-	if ((surface->flags&SDL_HWSURFACE)!=0) {
-		/* HARDWARE SURFACE!!!: */ 
-		tmp=SDL_CreateRGBSurface(SDL_SWSURFACE,surface->w,surface->h,32,0,0,0,0);
-		SDL_BlitSurface(surface,0,tmp,0);
-		SDL_LockSurface(tmp);
-		pixels = (Uint8 *)(tmp->pixels);
-	} else {
-		SDL_LockSurface(surface);
-		pixels = (Uint8 *)(surface->pixels);
-	} /* if */ 
+	/* SDL3: SDL_HWSURFACE nao existe mais -- todas as surfaces sao
+	   "software" (o antigo ramo de superficie de hardware ja era
+	   inalcancavel desde o SDL2). */
+	SDL_LockSurface(surface);
+	pixels = (Uint8 *)(surface->pixels);
 
 	for(y=r->y;y<r->y+r->h && y<surface->h;y++) {
 		for(x=r->x,offs=y*surface->pitch+r->x*4;x<r->x+r->w && x<surface->w;x++,offs+=4) {
 			pixels[offs+ROFFSET]=rtable[pixels[offs+ROFFSET]];
 			pixels[offs+GOFFSET]=gtable[pixels[offs+GOFFSET]];
 			pixels[offs+BOFFSET]=btable[pixels[offs+BOFFSET]];
-		} /* for */ 
-	} /* for */ 
+		} /* for */
+	} /* for */
 
-	if ((surface->flags&SDL_HWSURFACE)!=0) {
-		/* HARDWARE SURFACE!!!: */ 
-		SDL_UnlockSurface(tmp);
-		SDL_BlitSurface(tmp,0,surface,0);
-		SDL_FreeSurface(tmp);
-	} else {
-		SDL_UnlockSurface(surface);
-	} /* if */ 
+	SDL_UnlockSurface(surface);
 
-
-} /* surface_fader */ 
+} /* surface_fader */
 
 
 void surface_shader(SDL_Surface *surface,float factor,int red,int green,int blue,int alpha)
@@ -315,7 +308,7 @@ void surface_shader(SDL_Surface *surface,float factor,int red,int green,int blue
 	if (ifactor>=256) ifactor=256;
 	inv_ifactor=256-ifactor;
 
-	if (surface->format->BytesPerPixel!=4) return;
+	if (SDL_GetPixelFormatDetails(surface->format)->bytes_per_pixel!=4) return;
 
 	SDL_LockSurface(surface);
 	pixels = (Uint8 *)(surface->pixels);
@@ -346,7 +339,7 @@ void surface_bicolor(SDL_Surface *surface,float factor,int r1,int g1,int b1,int 
 	if (ifactor>=256) ifactor=256;
 	inv_ifactor=256-ifactor;
 
-	if (surface->format->BytesPerPixel!=4) return;
+	if (SDL_GetPixelFormatDetails(surface->format)->bytes_per_pixel!=4) return;
 
 	SDL_LockSurface(surface);
 	pixels = (Uint8 *)(surface->pixels);
@@ -366,7 +359,53 @@ void surface_bicolor(SDL_Surface *surface,float factor,int r1,int g1,int b1,int 
 
 	SDL_UnlockSurface(surface);
 
-} /* surface_bicolor */ 
+} /* surface_bicolor */
+
+
+void surface_rotozoom(SDL_Surface *src,SDL_Surface *dst,float angle,float xscale,float yscale,int px,int py,int qx,int qy)
+{
+	float rad,cs,sn,hw,hh,diag;
+	int x0,y0,x1,y1,x,y;
+
+	if (xscale<=0.0F || yscale<=0.0F) return;
+
+	rad=angle*(3.14159265F/180.0F);
+	cs=cosf(rad);
+	sn=sinf(rad);
+
+	/* Caixa (em dst) que cobre todo o retangulo de src rotacionado+escalado,
+	   pra nao ter que varrer a tela inteira. */
+	hw=(src->w/2.0F)*xscale;
+	hh=(src->h/2.0F)*yscale;
+	diag=sqrtf(hw*hw+hh*hh)+1.0F;
+
+	x0=int(qx-diag); if (x0<0) x0=0;
+	y0=int(qy-diag); if (y0<0) y0=0;
+	x1=int(qx+diag); if (x1>dst->w) x1=dst->w;
+	y1=int(qy+diag); if (y1>dst->h) y1=dst->h;
+
+	SDL_LockSurface(src);
+	SDL_LockSurface(dst);
+
+	for(y=y0;y<y1;y++) {
+		for(x=x0;x<x1;x++) {
+			/* Mapeamento inverso: de onde em src veio o pixel (x,y) de dst? */
+			float dx=float(x-qx);
+			float dy=float(y-qy);
+			float rx=( dx*cs+dy*sn)/xscale;
+			float ry=(-dx*sn+dy*cs)/yscale;
+			int sx=int(rx+px);
+			int sy=int(ry+py);
+
+			if (sx>=0 && sx<src->w && sy>=0 && sy<src->h) {
+				putpixel(dst,x,y,getpixel(src,sx,sy));
+			} /* if */
+		} /* for */
+	} /* for */
+
+	SDL_UnlockSurface(dst);
+	SDL_UnlockSurface(src);
+} /* surface_rotozoom */
 
 
 void draw_rectangle(SDL_Surface *surface, int x, int y, int w, int h, Uint32 pixel)
@@ -451,16 +490,18 @@ void surface_automatic_alpha(SDL_Surface *sfc)
 	int i,j;
 	Uint32 color;
         Uint8 r,g,b,a;
+	const SDL_PixelFormatDetails *fmt=SDL_GetPixelFormatDetails(sfc->format);
+	SDL_Palette *pal=SDL_GetSurfacePalette(sfc);
 
 	for(i=0;i<sfc->w;i++) {
-		for(j=0;j<sfc->h;j++) {                
+		for(j=0;j<sfc->h;j++) {
 			SDL_LockSurface(sfc);
             color=getpixel(sfc,i,j);
 			SDL_UnlockSurface(sfc);
-			SDL_GetRGBA(color,sfc->format,&r,&g,&b,&a);
+			SDL_GetRGBA(color,fmt,pal,&r,&g,&b,&a);
 			if (r!=0 || g!=0 || b!=0) a=255;
                                              else a=0;
-			color=SDL_MapRGBA(sfc->format,r,g,b,a);
+			color=SDL_MapRGBA(fmt,pal,r,g,b,a);
 
 			SDL_LockSurface(sfc);
 			putpixel(sfc,i,j,color);
@@ -475,16 +516,18 @@ void surface_bw(SDL_Surface *sfc,int threshold)
 	int i,j;
 	Uint32 color;
     Uint8 r,g,b,a;
+	const SDL_PixelFormatDetails *fmt=SDL_GetPixelFormatDetails(sfc->format);
+	SDL_Palette *pal=SDL_GetSurfacePalette(sfc);
 
 	for(i=0;i<sfc->w;i++) {
-		for(j=0;j<sfc->h;j++) {                
+		for(j=0;j<sfc->h;j++) {
 			SDL_LockSurface(sfc);
             color=getpixel(sfc,i,j);
 			SDL_UnlockSurface(sfc);
-			SDL_GetRGBA(color,sfc->format,&r,&g,&b,&a);
+			SDL_GetRGBA(color,fmt,pal,&r,&g,&b,&a);
 			if (r>=threshold || g>=threshold || b>=threshold) a=255;
 														 else a=0;
-			color=SDL_MapRGBA(sfc->format,a,a,a,a);
+			color=SDL_MapRGBA(fmt,pal,a,a,a,a);
 
 			SDL_LockSurface(sfc);
 			putpixel(sfc,i,j,color);
@@ -500,19 +543,21 @@ void surface_mask_from_bitmap(SDL_Surface *sfc,SDL_Surface *mask,int x,int y)
 	int mean;
 	Uint32 color;
         Uint8 r,g,b,a;
+	const SDL_PixelFormatDetails *fmt=SDL_GetPixelFormatDetails(sfc->format);
+	SDL_Palette *pal=SDL_GetSurfacePalette(sfc);
 
 	for(i=0;i<sfc->w;i++) {
 		for(j=0;j<sfc->h;j++) {
 			SDL_LockSurface(mask);
 			color=getpixel(mask,x+i,y+j);
 			SDL_UnlockSurface(mask);
-			SDL_GetRGBA(color,sfc->format,&r,&g,&b,&a);
+			SDL_GetRGBA(color,fmt,pal,&r,&g,&b,&a);
                         mean=(r+g+b)/3;
 			SDL_LockSurface(sfc);
 			color=getpixel(sfc,i,j);
 			SDL_UnlockSurface(sfc);
-			SDL_GetRGBA(color,sfc->format,&r,&g,&b,&a);
-			color=SDL_MapRGBA(sfc->format,r,g,b,mean);
+			SDL_GetRGBA(color,fmt,pal,&r,&g,&b,&a);
+			color=SDL_MapRGBA(fmt,pal,r,g,b,mean);
 			SDL_LockSurface(sfc);
 			putpixel(sfc,i,j,color);
 			SDL_UnlockSurface(sfc);
@@ -535,7 +580,7 @@ SDL_Surface *multiline_text_surface(char *text,int line_dist,TTF_Font *font,SDL_
 		text_tmp[j]=text[i];
 		if (text[i]=='\n') {
 			text_tmp[j]=0;
-			tmp=TTF_RenderText_Blended(font,text_tmp,c);
+			tmp=TTF_RenderText_Blended(font,text_tmp,0,c);
 			if (tmp->w>sizex) sizex=tmp->w;
 
 			if (sizey!=0) sizey+=line_dist;
@@ -549,7 +594,10 @@ SDL_Surface *multiline_text_surface(char *text,int line_dist,TTF_Font *font,SDL_
 		i++;
 	} /* while */ 
 
-	tmp=SDL_CreateRGBSurface(0,sizex,sizey,32,0,0,0,0);
+	/* SDL3: masks 0,0,0,0 em SDL_CreateRGBSurface pediam "os masks
+	   default de 32bpp" (sem canal alpha), o que corresponde a
+	   SDL_PIXELFORMAT_XRGB8888. */
+	tmp=SDL_CreateSurface(sizex,sizey,SDL_PIXELFORMAT_XRGB8888);
 
 	y=0;
 	while(!sfc_l.EmptyP()) {
@@ -564,11 +612,11 @@ SDL_Surface *multiline_text_surface(char *text,int line_dist,TTF_Font *font,SDL_
 		SDL_BlitSurface(tmp2,0,tmp,&r);
 		y+=tmp2->h;
 		y+=line_dist;
-		SDL_FreeSurface(tmp2);
-	} /* while */ 
+		SDL_DestroySurface(tmp2);
+	} /* while */
 
 	return tmp;
-} /* multiline_text_surface */ 
+} /* multiline_text_surface */
 
 
 SDL_Surface *multiline_text_surface2(char *text,int line_dist,TTF_Font *font,SDL_Color c1,SDL_Color c2,int line,float glow)
@@ -585,8 +633,8 @@ SDL_Surface *multiline_text_surface2(char *text,int line_dist,TTF_Font *font,SDL
 		text_tmp[j]=text[i];
 		if (text[i]=='\n') {
 			text_tmp[j]=0;
-			if (current_line==line) tmp=TTF_RenderText_Blended(font,text_tmp,c2);
-							   else tmp=TTF_RenderText_Blended(font,text_tmp,c1);
+			if (current_line==line) tmp=TTF_RenderText_Blended(font,text_tmp,0,c2);
+							   else tmp=TTF_RenderText_Blended(font,text_tmp,0,c1);
 			if (tmp->w>sizex) sizex=tmp->w;
 
 			if (sizey!=0) sizey+=line_dist;
@@ -601,7 +649,7 @@ SDL_Surface *multiline_text_surface2(char *text,int line_dist,TTF_Font *font,SDL
 		i++;
 	} /* while */ 
 
-	tmp=SDL_CreateRGBSurface(SDL_SWSURFACE,sizex,sizey,32,0,0,0,0);
+	tmp=SDL_CreateSurface(sizex,sizey,SDL_PIXELFORMAT_XRGB8888);
 
 	y=0;
 	current_line=0;
@@ -634,7 +682,7 @@ SDL_Surface *multiline_text_surface2(char *text,int line_dist,TTF_Font *font,SDL
 						if (v!=0) {			
 							v2=table[v];
 							v3=table[v2];
-							c=SDL_MapRGB(tmp->format,v2,v3,v3);
+							c=SDL_MapRGB(SDL_GetPixelFormatDetails(tmp->format),SDL_GetSurfacePalette(tmp),v2,v3,v3);
 							
 							maximumpixel(tmp,i+1,j,c);
 							maximumpixel(tmp,i-1,j,c);
@@ -648,7 +696,7 @@ SDL_Surface *multiline_text_surface2(char *text,int line_dist,TTF_Font *font,SDL
 
 		y+=tmp2->h;
 		y+=line_dist;
-		SDL_FreeSurface(tmp2);
+		SDL_DestroySurface(tmp2);
 		current_line++;
 	} /* while */ 
 

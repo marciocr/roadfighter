@@ -53,7 +53,7 @@ CEnemyTruckObject::~CEnemyTruckObject(void)
 {
 } /* CEnemyTruckObject::~CEnemyTruckObject */ 
 
-bool CEnemyTruckObject::cycle(unsigned char *keyboard,unsigned char *old_keyboard)
+bool CEnemyTruckObject::cycle(const bool *keyboard,const bool *old_keyboard)
 {
 	CCarObject::cycle(keyboard,old_keyboard);
 

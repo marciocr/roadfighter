@@ -58,7 +58,7 @@ CSemaphoreObject::~CSemaphoreObject(void)
 
 
 
-bool CSemaphoreObject::cycle(unsigned char *keyboard,unsigned char *old_keyboard)
+bool CSemaphoreObject::cycle(const bool *keyboard,const bool *old_keyboard)
 {
 	timmer++;
 

@@ -49,7 +49,7 @@ CEnemyFastCarObject::~CEnemyFastCarObject(void)
 
 
 
-bool CEnemyFastCarObject::cycle(unsigned char *keyboard,unsigned char *old_keyboard)
+bool CEnemyFastCarObject::cycle(const bool *keyboard,const bool *old_keyboard)
 {
 	CCarObject::cycle(keyboard,old_keyboard);
 

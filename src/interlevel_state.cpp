@@ -42,6 +42,9 @@ int nlevels=6;
 extern int SCREEN_X;
 extern int SCREEN_Y;
 extern int start_level;
+/* SDL3: SDL_DisplayFormat() nao existe mais; convertemos explicitamente
+   para o formato de pixel da janela via SDL_ConvertSurface. */
+extern SDL_Surface *screen_sfc;
 
 char *maps[6]={"maps/level1.mg2",
 			   "maps/level2.mg2",
@@ -59,7 +62,7 @@ int CRoadFighter::interlevel_cycle(void)
 
 		int score1=0,score2=0;
 
-		if (levelintro_sfc!=0) SDL_FreeSurface(levelintro_sfc);
+		if (levelintro_sfc!=0) SDL_DestroySurface(levelintro_sfc);
 
 		Sound_music_volume(MIX_MAX_VOLUME);
 		if (current_level>start_level && game!=0) {
@@ -78,7 +81,7 @@ int CRoadFighter::interlevel_cycle(void)
 		} /* if */ 
 
 		if (current_level<6) {
-			SDL_FreeSurface(scoreboard2_sfc);
+			SDL_DestroySurface(scoreboard2_sfc);
 			if (n_players>1) scoreboard2_sfc=IMG_Load("graphics/s_board12p.bmp");
 						else scoreboard2_sfc=IMG_Load("graphics/s_board11p.bmp");
 		} else {
@@ -178,7 +181,7 @@ void CRoadFighter::interlevel_draw(SDL_Surface *screen)
 {
 	SDL_Rect r;
 
-	SDL_FillRect(screen,0,0);
+	SDL_FillSurfaceRect(screen,0,0);
 
 	switch(interlevel_state) {
 
@@ -260,7 +263,7 @@ void CRoadFighter::interlevel_draw(SDL_Surface *screen)
 
 			if (levelintro_sfc!=0) {
 
-				text_sfc=SDL_DisplayFormat(levelintro_sfc);
+				text_sfc=SDL_ConvertSurface(levelintro_sfc,screen_sfc->format);
 
 				f=float(interlevel_timmer)/interlevel_time;	
 				if (f>=1.0) f=1.0;
@@ -271,20 +274,20 @@ void CRoadFighter::interlevel_draw(SDL_Surface *screen)
 				r.w=text_sfc->w;
 				r.h=text_sfc->h;
 				SDL_BlitSurface(text_sfc,0,screen,&r);
-				SDL_FreeSurface(text_sfc);
+				SDL_DestroySurface(text_sfc);
 			} else {
 				sprintf(text,"STAGE %.2i",current_level);
 
 				v=(interlevel_timmer*255)/interlevel_time;	
 				if (v>=255) v=255;
 				c.r=c.g=c.b=v;
-				text_sfc=TTF_RenderText_Blended(font2big,text,c);
+				text_sfc=TTF_RenderText_Blended(font2big,text,0,c);
 				r.x=(desired_scoreboard_x)/2-text_sfc->w/2;
 				r.y=(screen->h/2)-text_sfc->h;
 				r.w=text_sfc->w;
 				r.h=text_sfc->h;
 				SDL_BlitSurface(text_sfc,0,screen,&r);
-				SDL_FreeSurface(text_sfc);
+				SDL_DestroySurface(text_sfc);
 			} // if 
 		}
 		break;

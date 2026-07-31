@@ -70,24 +70,35 @@ int CRoadFighter::playing_cycle(void)
 		fprintf(replay_fp,"-1\n");
 	} else {
 		if (load_replay) {
+			/* SDL3: SDL_GetKeyboardState() agora devolve um buffer
+			   somente-leitura (const bool*), entao nao da mais pra
+			   "falsificar" teclas escrevendo direto nele como antes.
+			   Em vez disso, apontamos "keyboard" para um buffer proprio
+			   e mutavel preenchido com o replay -- keyboard e um ponteiro
+			   (nao-const), so o que ele aponta e const, entao reatribuir
+			   o ponteiro continua valido, e o loop de old_keyboard[] em
+			   CRoadFighter::cycle() (que le a partir de keyboard) segue
+			   funcionando exatamente como antes. */
+			static bool replay_keyboard[SDL_SCANCODE_COUNT];
 			int v,v2;
 			do{
 				if (1!=fscanf(replay_fp,"%i",&v)) {
 					fclose(replay_fp);
 					replay_fp=0;
 					return GAMEOVER_STATE;
-				} /* if */ 
+				} /* if */
 				if (v!=-1) {
 					if (1!=fscanf(replay_fp,"%i",&v2)) {
 						fclose(replay_fp);
 						replay_fp=0;
 						return GAMEOVER_STATE;
-					} /* if */ 
-					if (v==1) keyboard[v2]=true;
-					if (v==0) keyboard[v2]=false;
-				} /* if */ 
+					} /* if */
+					if (v==1) replay_keyboard[v2]=true;
+					if (v==0) replay_keyboard[v2]=false;
+				} /* if */
 			} while(v!=-1);
-		} /* if */ 
+			keyboard=replay_keyboard;
+		} /* if */
 	} /* if */ 
 
 	if (!game->cycle(keyboard,old_keyboard)) {
@@ -150,7 +161,7 @@ void CRoadFighter::playing_draw(SDL_Surface *screen)
 {
 	SDL_Rect r;
 
-	SDL_FillRect(screen,0,0);
+	SDL_FillSurfaceRect(screen,0,0);
 
 	scoreboard_draw(scoreboard_x,0,screen);
 

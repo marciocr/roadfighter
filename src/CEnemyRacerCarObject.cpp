@@ -47,7 +47,7 @@ CEnemyRacerCarObject::~CEnemyRacerCarObject(void)
 
 
 
-bool CEnemyRacerCarObject::cycle(unsigned char *keyboard,unsigned char *old_keyboard)
+bool CEnemyRacerCarObject::cycle(const bool *keyboard,const bool *old_keyboard)
 {
 	bool retval=true;
 

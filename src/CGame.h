@@ -51,7 +51,7 @@ public:
 				 int score1,int score2,int current_level,bool extras);
 	~CGame(void);
 
-	bool cycle(unsigned char *keyboard,unsigned char *old_keyboard);
+	bool cycle(const bool *keyboard,const bool *old_keyboard);
 	void draw(SDL_Surface *sfc,SDL_Rect vp);
 
 	bool level_completed(void);
@@ -121,7 +121,10 @@ private:
 	SOUNDT S_takefuel,S_redlight,S_greenlight,S_crash,S_water;
 	SOUNDT S_carstart,S_fuelempty,S_caradvance,S_collision;
 	SOUNDT S_truck;
-	Mix_Chunk *S_carengine,*S_carskid;
+	/* SDL3_mixer: antes declarados Mix_Chunk* direto (pra sinalizar que
+	   CPlayerCarObject acessava os bytes crus do buffer) -- essa API nao
+	   existe mais, entao viram SOUNDT como os outros (ver CObject.h). */
+	SOUNDT S_carengine,S_carskid;
 
 	/* Background: */ 
 	List<CObject> background;

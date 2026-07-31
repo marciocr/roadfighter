@@ -39,7 +39,7 @@ public:
 	CObject(int x,int y,CTile *t,int constitution,class CGame *game);	/* Simple constructor */ 
 	~CObject(void);
 
-	virtual bool cycle(unsigned char *keyboard,unsigned char *old_keyboard);
+	virtual bool cycle(const bool *keyboard,const bool *old_keyboard);
 	virtual void draw(int sx,int sy,SDL_Surface *screen);
 	bool collision(int offsx,int offst,CObject *o);
 
@@ -71,7 +71,7 @@ public:
 	CSemaphoreObject(int x,int y,CTile *t1,CTile *t2,CTile *t3,CTile *t4,CTile *t5,class CGame *game);
 	~CSemaphoreObject(void);
 
-	virtual bool cycle(unsigned char *keyboard,unsigned char *old_keyboard);
+	virtual bool cycle(const bool *keyboard,const bool *old_keyboard);
 
 protected:
 	int timmer;
@@ -84,7 +84,7 @@ public:
 	CCarObject(int x,int y,CTile *t,class CGame *game);
 	~CCarObject(void);
 
-	virtual bool cycle(unsigned char *keyboard,unsigned char *old_keyboard);
+	virtual bool cycle(const bool *keyboard,const bool *old_keyboard);
 
 	int get_y_speed(void) {return y_speed;};
 	void car_collision(CCarObject *car);
@@ -105,7 +105,7 @@ public:
 	CFuelObject(int x,int y,CTile *t,class CGame *game);
 	~CFuelObject(void);
 
-	virtual bool cycle(unsigned char *keyboard,unsigned char *old_keyboard);
+	virtual bool cycle(const bool *keyboard,const bool *old_keyboard);
 
 protected:
 	int y_precision,x_precision;
@@ -119,7 +119,7 @@ public:
 					 int lk,int rk,int fk,int sc,int init_delay,class CGame *game);
 	~CPlayerCarObject(void);
 
-	virtual bool cycle(unsigned char *keyboard,unsigned char *old_keyboard);
+	virtual bool cycle(const bool *keyboard,const bool *old_keyboard);
 	virtual void draw(int sx,int sy,SDL_Surface *screen);
 
 
@@ -146,9 +146,13 @@ protected:
 	int blinking_time;
 	int old_angle;
 
-	int enginesound_channel,skidsound_channel;
-	Mix_Chunk S_carengine_working;
-	Mix_Chunk S_carskid_working;
+	/* SDL3_mixer: nao existe mais Mix_Chunk (nem a manipulacao direta de
+	   -&gt;abuf/-&gt;alen que era usada aqui pra "esticar"/"encolher" a amostra
+	   e simular a variacao de pitch do motor). O equivalente moderno e
+	   MIX_SetTrackFrequencyRatio() numa MIX_Track propria, que faz o
+	   pitch-shift de verdade em tempo real, sem precisar re-samplear
+	   manualmente o audio a cada frame (ver CPlayerCarObject::cycle). */
+	MIX_Track *enginesound_track,*skidsound_track;
 
 	int score;
 	int bonus,next_bonus,bonus_timmer;
@@ -167,7 +171,7 @@ public:
 	CEnemyCarObject(int x,int y,CTile *t,int start_delay,class CGame *game);
 	~CEnemyCarObject(void);
 
-	virtual bool cycle(unsigned char *keyboard,unsigned char *old_keyboard);
+	virtual bool cycle(const bool *keyboard,const bool *old_keyboard);
 
 protected:
 	int slide_direction;
@@ -200,7 +204,7 @@ public:
 	CEnemyRacerCarObject(int x,int y,CTile *t,int start_delay,class CGame *game);
 	~CEnemyRacerCarObject(void);
 
-	virtual bool cycle(unsigned char *keyboard,unsigned char *old_keyboard);
+	virtual bool cycle(const bool *keyboard,const bool *old_keyboard);
 
 protected:
 	bool advanced;
@@ -215,7 +219,7 @@ public:
 	CEnemyFastCarObject(int x,int y,CTile *t,int start_delay,class CGame *game);
 	~CEnemyFastCarObject(void);
 
-	virtual bool cycle(unsigned char *keyboard,unsigned char *old_keyboard);
+	virtual bool cycle(const bool *keyboard,const bool *old_keyboard);
 
 protected:
 
@@ -229,7 +233,7 @@ public:
 	CEnemySlidderCarObject(int x,int y,CTile *t,int start_delay,class CGame *game);
 	~CEnemySlidderCarObject(void);
 
-	virtual bool cycle(unsigned char *keyboard,unsigned char *old_keyboard);
+	virtual bool cycle(const bool *keyboard,const bool *old_keyboard);
 
 protected:
 
@@ -243,7 +247,7 @@ public:
 	CEnemyTruckObject(int x,int y,CTile *t,int start_delay,class CGame *game);
 	~CEnemyTruckObject(void);
 
-	virtual bool cycle(unsigned char *keyboard,unsigned char *old_keyboard);
+	virtual bool cycle(const bool *keyboard,const bool *old_keyboard);
 
 protected:
 	int state_timmer;
@@ -259,7 +263,7 @@ public:
 	CExplosionObject(int x,int y,List<CTile> *l,int first_tile,int last_tile,class CGame *game);
 	~CExplosionObject(void);
 
-	virtual bool cycle(unsigned char *keyboard,unsigned char *old_keyboard);
+	virtual bool cycle(const bool *keyboard,const bool *old_keyboard);
 
 protected:
 	int timmer;

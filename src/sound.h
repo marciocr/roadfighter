@@ -21,7 +21,23 @@
 #ifndef __BRAIN_SDL_SOUND
 #define __BRAIN_SDL_SOUND
 
-typedef Mix_Chunk * SOUNDT;
+/* SDL3_mixer 3.x substituiu a API antiga (Mix_Chunk/Mix_Music, canais
+   numerados, Mix_OpenAudio) por um modelo de objetos (MIX_Audio/MIX_Track
+   num MIX_Mixer). Nao existe mais distincao de tipo entre som curto e
+   musica -- os dois viram MIX_Audio. */
+typedef MIX_Audio * SOUNDT;
+
+/* SDL3_mixer nao define mais essa constante (volume agora e um ganho
+   float 0.0-1.0+, nao um inteiro 0-128). Mantemos o valor antigo aqui so
+   para nao precisar mexer em todo o jogo, que usa esse inteiro como escala
+   pra calcular fade in/out; a conversao pra float acontece dentro de
+   sound.cpp. */
+#define MIX_MAX_VOLUME 128
+
+/* Exposto porque CPlayerCarObject precisa criar suas proprias MIX_Track
+   (motor/derrapagem) diretamente, no lugar do antigo hack de Mix_Chunk
+   cru -- ver CObject.h/CPlayerCarObject.cpp. */
+extern MIX_Mixer *mixer;
 
 bool Sound_initialization(void);
 int Sound_initialization(int nc,int nrc);

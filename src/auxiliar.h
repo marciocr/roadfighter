@@ -76,6 +76,12 @@ void surface_fader(SDL_Surface *surface,float r_factor,float g_factor,float b_fa
 void surface_shader(SDL_Surface *surface,float factor,int red,int green,int blue,int alpha);
 void surface_bicolor(SDL_Surface *surface,float factor,int r1,int g1,int b1,int a1,int r2,int g2,int b2,int a2);
 
+/* Desenha "src" rotacionado (graus, sentido horario) e escalado em cima de
+   "dst": o ponto (px,py) de src (o "pivo") cai em (qx,qy) de dst. Usado
+   pelo efeito de "roto-zoom" do titulo do menu -- substitui o antigo
+   sge_transform() da biblioteca SGE. */
+void surface_rotozoom(SDL_Surface *src,SDL_Surface *dst,float angle,float xscale,float yscale,int px,int py,int qx,int qy);
+
 SDL_Surface *load_maskedimage(char *image,char *mask,char *path);
 
 void surface_automatic_alpha(SDL_Surface *sfc);

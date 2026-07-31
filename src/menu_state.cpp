@@ -37,7 +37,6 @@
 
 #include "sound.h"
 
-#include "sge/sge.h"
 #include "CTile.h"
 #include "CObject.h"
 #include "CGame.h"
@@ -55,7 +54,7 @@ int CRoadFighter::menu_cycle(void)
 {
 	if (state_timmer==0) {
 
-		menu_effect=(rand()%3)+1;	/* 1,2 ó 3 */ 
+		menu_effect=(rand()%3)+1;	/* 1,2 ï¿½ 3 */ 
 		menu_state=0;
 		menu_timmer=0;
 		menu_current_menu=0;
@@ -380,9 +379,9 @@ int CRoadFighter::menu_cycle(void)
 			strcpy(menu_tittle_text,"PLAYER 1:");
 			delete menu_options_text;
 			sprintf(tmp,"RIGHT : %s\nLEFT : %s\nFIRE : %s\nBACK\n",
-					(menu_redefining_key==0 ? "":strupr(SDL_GetKeyName((SDL_Scancode)right_key))),
-					(menu_redefining_key==1 ? "":strupr(SDL_GetKeyName((SDL_Scancode)left_key))),
-					(menu_redefining_key==2 ? "":strupr(SDL_GetKeyName((SDL_Scancode)fire_key))));
+					(menu_redefining_key==0 ? "":strupr(SDL_GetScancodeName((SDL_Scancode)right_key))),
+					(menu_redefining_key==1 ? "":strupr(SDL_GetScancodeName((SDL_Scancode)left_key))),
+					(menu_redefining_key==2 ? "":strupr(SDL_GetScancodeName((SDL_Scancode)fire_key))));
 			menu_options_text=new char[strlen(tmp)+1];
 			strcpy(menu_options_text,tmp);
 			menu_nitems=4;
@@ -394,9 +393,9 @@ int CRoadFighter::menu_cycle(void)
 			strcpy(menu_tittle_text,"PLAYER 2:");
 			delete menu_options_text;
 			sprintf(tmp,"RIGHT : %s\nLEFT : %s\nFIRE : %s\nBACK\n",
-					(menu_redefining_key==3 ? "":strupr(SDL_GetKeyName((SDL_Scancode)right2_key))),
-					(menu_redefining_key==4 ? "":strupr(SDL_GetKeyName((SDL_Scancode)left2_key))),
-					(menu_redefining_key==5 ? "":strupr(SDL_GetKeyName((SDL_Scancode)fire2_key))));
+					(menu_redefining_key==3 ? "":strupr(SDL_GetScancodeName((SDL_Scancode)right2_key))),
+					(menu_redefining_key==4 ? "":strupr(SDL_GetScancodeName((SDL_Scancode)left2_key))),
+					(menu_redefining_key==5 ? "":strupr(SDL_GetScancodeName((SDL_Scancode)fire2_key))));
 			menu_options_text=new char[strlen(tmp)+1];
 			strcpy(menu_options_text,tmp);
 			menu_nitems=4;
@@ -445,7 +444,7 @@ void CRoadFighter::menu_draw(SDL_Surface *screen)
 				float f=float(menu_timmer)*(1.0F/float(EFFECT_LENGTH));
 				if (f<0.0) f=0.0;
 				if (f>=1.0) f=1.0;
-				SDL_FillRect(screen,0,0);
+				SDL_FillSurfaceRect(screen,0,0);
 				SDL_BlitSurface(tittle_sfc,0,screen,0);
 				if (f<1.0) surface_fader(screen,f,f,f,0);
 			}
@@ -466,7 +465,7 @@ void CRoadFighter::menu_draw(SDL_Surface *screen)
 				r.w=screen->w;
 				r.h=screen->h;
 
-				SDL_FillRect(screen,0,0);
+				SDL_FillSurfaceRect(screen,0,0);
 				SDL_BlitSurface(tittle_sfc,0,screen,&r);
 			}
 			break;
@@ -478,8 +477,8 @@ void CRoadFighter::menu_draw(SDL_Surface *screen)
 				float f=float(menu_timmer)*(1.0F/float(EFFECT_LENGTH));
 				if (f<0.0) f=0.0;
 				if (f>=1.0) f=1.0;
-				SDL_FillRect(screen,0,0);
-				sge_transform(tittle_sfc,screen,0,f,f,tittle_sfc->w/2,tittle_sfc->h/2,tittle_sfc->w/2,tittle_sfc->h/2,0);
+				SDL_FillSurfaceRect(screen,0,0);
+				surface_rotozoom(tittle_sfc,screen,0,f,f,tittle_sfc->w/2,tittle_sfc->h/2,tittle_sfc->w/2,tittle_sfc->h/2);
 			}
 			break;
 
@@ -491,8 +490,8 @@ void CRoadFighter::menu_draw(SDL_Surface *screen)
 				if (f<0.0) f=0.0;
 				if (f>=1.0) f=1.0;
 				a=(1.0F-f)*260.0F;
-				SDL_FillRect(screen,0,0);
-				sge_transform(tittle_sfc,screen,a,f,f,tittle_sfc->w/2,tittle_sfc->h/2,tittle_sfc->w/2,tittle_sfc->h/2,0);
+				SDL_FillSurfaceRect(screen,0,0);
+				surface_rotozoom(tittle_sfc,screen,a,f,f,tittle_sfc->w/2,tittle_sfc->h/2,tittle_sfc->w/2,tittle_sfc->h/2);
 			}
 			break;
 		} /* switch */ 
@@ -507,12 +506,12 @@ void CRoadFighter::menu_draw(SDL_Surface *screen)
 			SDL_Surface *menu_sfc,*options_sfc;
 
 			/* Draw tittle: */ 
-			SDL_FillRect(screen,0,0);
+			SDL_FillSurfaceRect(screen,0,0);
 			SDL_BlitSurface(tittle_sfc,0,screen,0);
 
 			c.r=c.g=c.b=255;
 			c1.r=c1.g=c1.b=224;
-			menu_sfc=TTF_RenderText_Blended(font2big,menu_tittle_text,c);
+			menu_sfc=TTF_RenderText_Blended(font2big,menu_tittle_text,0,c);
 			if (menu_nitems>5) {
 				options_sfc=multiline_text_surface2(menu_options_text,0,font2small,c1,c1,-1,0);
 			} else {
@@ -532,14 +531,14 @@ void CRoadFighter::menu_draw(SDL_Surface *screen)
 				r.w=bar_length;
 				r.h=4;
 
-				SDL_FillRect(screen,&r,SDL_MapRGB(screen->format,64,64,64));
+				SDL_FillSurfaceRect(screen,&r,SDL_MapRGB(SDL_GetPixelFormatDetails(screen->format),SDL_GetSurfacePalette(screen),64,64,64));
 
 				r.x=(screen->w/2-bar_length/2)+1;
 				r.y=int(screen->h*y_position)+1;
 				r.w=bar_length-2;
 				r.h=2;
 
-				SDL_FillRect(screen,&r,SDL_MapRGB(screen->format,255,255,255));
+				SDL_FillSurfaceRect(screen,&r,SDL_MapRGB(SDL_GetPixelFormatDetails(screen->format),SDL_GetSurfacePalette(screen),255,255,255));
 			}
 
 			/* Draw text: */ 
@@ -574,8 +573,8 @@ void CRoadFighter::menu_draw(SDL_Surface *screen)
 				SDL_BlitSurface(options_sfc,&r,screen,&r2);
 			}
 
-			SDL_FreeSurface(menu_sfc);
-			SDL_FreeSurface(options_sfc);
+			SDL_DestroySurface(menu_sfc);
+			SDL_DestroySurface(options_sfc);
 		}
 
 		break;
@@ -590,12 +589,12 @@ void CRoadFighter::menu_draw(SDL_Surface *screen)
 			float glow;
 
 			/* Draw tittle: */ 
-			SDL_FillRect(screen,0,0);
+			SDL_FillSurfaceRect(screen,0,0);
 			SDL_BlitSurface(tittle_sfc,0,screen,0);
 
 			c.r=c.g=c.b=255;
 			c1.r=c1.g=c1.b=224;
-			menu_sfc=TTF_RenderText_Blended(font2big,menu_tittle_text,c);
+			menu_sfc=TTF_RenderText_Blended(font2big,menu_tittle_text,0,c);
 
 			glow=(float(fabs(sin(state_timmer/10.0F)))/2.0F)+0.125F;
 
@@ -624,14 +623,14 @@ void CRoadFighter::menu_draw(SDL_Surface *screen)
 				r.w=bar_length;
 				r.h=4;
 
-				SDL_FillRect(screen,&r,SDL_MapRGB(screen->format,64,64,64));
+				SDL_FillSurfaceRect(screen,&r,SDL_MapRGB(SDL_GetPixelFormatDetails(screen->format),SDL_GetSurfacePalette(screen),64,64,64));
 
 				r.x=(screen->w/2-bar_length/2)+1;
 				r.y=int(screen->h*y_position)+1;
 				r.w=bar_length-2;
 				r.h=2;
 
-				SDL_FillRect(screen,&r,SDL_MapRGB(screen->format,255,255,255));
+				SDL_FillSurfaceRect(screen,&r,SDL_MapRGB(SDL_GetPixelFormatDetails(screen->format),SDL_GetSurfacePalette(screen),255,255,255));
 			}
 
 			/* Draw text: */ 
@@ -658,8 +657,8 @@ void CRoadFighter::menu_draw(SDL_Surface *screen)
 				SDL_BlitSurface(arrow_sfc,0,screen,&r);
 //			}
 
-			SDL_FreeSurface(menu_sfc);
-			SDL_FreeSurface(options_sfc);
+			SDL_DestroySurface(menu_sfc);
+			SDL_DestroySurface(options_sfc);
 		}
 		break;
 	} /* switch */ 

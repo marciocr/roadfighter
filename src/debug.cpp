@@ -49,7 +49,12 @@ void output_debug_message(const char *fmt, ...)
     if (fp == 0)
 		fp = f1open("roadfighter.dbg", "w", USERDATA);
 
-    fprintf(fp, fmt, text);
+    /* Bug pre-existente (nao ligado ao port pra SDL3): "text" ja e a string
+       formatada (via vsprintf acima); reaplicar "fmt" em cima dela de novo
+       aqui fazia o fprintf tratar os %s/%i de fmt como se text fosse a
+       lista de argumentos, lendo lixo da pilha quando fmt tinha mais de um
+       especificador. */
+    fprintf(fp, "%s", text);
     fflush(fp);
 } /* glprintf */
 

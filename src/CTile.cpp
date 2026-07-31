@@ -26,12 +26,16 @@
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <SDL3_image/SDL_image.h>
-#include "sge/sge.h"
 
 #include "CTile.h"
 #include "math.h"
 
 #include "auxiliar.h"
+
+/* SDL3: SDL_DisplayFormatAlpha() nao existe mais; usamos SDL_ConvertSurface
+   para o formato de pixel da janela (mesma solucao ja usada em
+   CRoadFighter.cpp). */
+extern SDL_Surface *screen_sfc;
 
 
 CTile::CTile(void)
@@ -55,11 +59,13 @@ CTile::CTile(int x,int y,int dx,int dy,SDL_Surface *o,bool collision)
 	r.h=dy;
 	r.w=dx;
 
-	orig=SDL_CreateRGBSurface(0,dx,dy,32,RMASK,GMASK,BMASK,AMASK);
-	SDL_SetAlpha(orig,0,SDL_ALPHA_OPAQUE);
+	orig=SDL_CreateSurface(dx,dy,SDL_GetPixelFormatForMasks(32,RMASK,GMASK,BMASK,AMASK));
+	SDL_SetSurfaceBlendMode(orig,SDL_BLENDMODE_NONE);
+	SDL_SetSurfaceAlphaMod(orig,SDL_ALPHA_OPAQUE);
 	SDL_BlitSurface(o,&r,orig,0);
 
-	SDL_SetAlpha(orig,SDL_SRCALPHA,SDL_ALPHA_OPAQUE);
+	SDL_SetSurfaceBlendMode(orig,SDL_BLENDMODE_BLEND);
+	SDL_SetSurfaceAlphaMod(orig,SDL_ALPHA_OPAQUE);
 	surface_mask_from_bitmap(orig,o,r.x+r.w,r.y);
 	mask_visualization=0;
 
@@ -70,10 +76,10 @@ CTile::CTile(int x,int y,int dx,int dy,SDL_Surface *o,bool collision)
 		r2.y=r.y;
 		r2.w=r.w;
 		r2.h=r.h;
-		mask_collision=SDL_CreateRGBSurface(0,r.w,r.h,32,RMASK,GMASK,BMASK,AMASK);
+		mask_collision=SDL_CreateSurface(r.w,r.h,SDL_GetPixelFormatForMasks(32,RMASK,GMASK,BMASK,AMASK));
 		SDL_BlitSurface(o,&r2,mask_collision,0);
 		surface_bw(mask_collision,128);
-		collision_data=sge_make_cmap(mask_collision);
+		collision_data=collision_make_map(mask_collision);
 	} else {
 		mask_collision=0;
 		collision_data=0;
@@ -128,14 +134,14 @@ void CTile::draw_shaded(int x,int y,SDL_Surface *dest,int factor,int red,int gre
 		d.y=0;
 		d.w=r.w;
 		d.h=r.h;
-		tmp=SDL_DisplayFormatAlpha(orig);
+		tmp=SDL_ConvertSurface(orig,screen_sfc->format);
 		surface_shader(tmp,float(factor)/100.0F,red,green,blue,alpha);
 		d.x=x;
 		d.y=y;
 		d.w=r.w;
 		d.h=r.h;
 		SDL_BlitSurface(tmp,0,dest,&d);
-		SDL_FreeSurface(tmp);
+		SDL_DestroySurface(tmp);
 	} /* if */ 
 } /* CTile::draw_shaded */ 
 
@@ -150,37 +156,16 @@ void CTile::draw_bicolor(int x,int y,SDL_Surface *dest,int factor,int r1,int g1,
 		d.y=0;
 		d.w=r.w;
 		d.h=r.h;
-		tmp=SDL_DisplayFormatAlpha(orig);
+		tmp=SDL_ConvertSurface(orig,screen_sfc->format);
 		surface_bicolor(tmp,float(factor)/100.0F,r1,g1,b1,a1,r2,g2,b2,a2);
 		d.x=x;
 		d.y=y;
 		d.w=r.w;
 		d.h=r.h;
 		SDL_BlitSurface(tmp,0,dest,&d);
-		SDL_FreeSurface(tmp);
+		SDL_DestroySurface(tmp);
 	} /* if */ 
 } /* CTile::draw_bicolor */ 
-
-
-void CTile::draw_scaled(int x,int y,SDL_Surface *dest,float scale)
-{
-	if (orig!=0) sge_transform(orig,dest,0,scale,scale,0,0,x,y,0);
-
-/*
-	if (orig!=0) {
-		SDL_Rect d;
-		SDL_Surface *res=zoomSurface(orig, scale, scale, 0);
-		
-		d.x=x;
-		d.y=y;
-		d.w=res->w;
-		d.h=res->h;
-		SDL_BlitSurface(res,0,dest,&d);
-
-		SDL_FreeSurface(res);
-	}
-*/ 
-} /* CTile::draw_scaled */ 
 
 
 void CTile::draw_mask(int x,int y,SDL_Surface *dest)
@@ -191,18 +176,18 @@ void CTile::draw_mask(int x,int y,SDL_Surface *dest)
 		if (mask_visualization==0) {
 			int i,j;
 
-			mask_visualization=SDL_CreateRGBSurface(SDL_HWSURFACE,r.w,r.h,32,0,0,0,0);
+			mask_visualization=SDL_CreateSurface(r.w,r.h,SDL_PIXELFORMAT_XRGB8888);
 			for(i=0;i<r.w;i++) {
 				for(j=0;j<r.h;j++) {
 					Uint32 color;
                     Uint8 r,g,b,a;
-                    
+
 					SDL_LockSurface(orig);
                     color=getpixel(orig,i,j);
 					SDL_UnlockSurface(orig);
-                    SDL_GetRGBA(color,orig->format,&r,&g,&b,&a);
+                    SDL_GetRGBA(color,SDL_GetPixelFormatDetails(orig->format),SDL_GetSurfacePalette(orig),&r,&g,&b,&a);
 
-                    color=SDL_MapRGBA(mask_visualization->format,a,a,a,0);
+                    color=SDL_MapRGBA(SDL_GetPixelFormatDetails(mask_visualization->format),SDL_GetSurfacePalette(mask_visualization),a,a,a,0);
 					SDL_LockSurface(mask_visualization);
                     putpixel(mask_visualization,i,j,color);		
 					SDL_UnlockSurface(mask_visualization);
@@ -230,15 +215,15 @@ void CTile::clear(void)
 
 void CTile::free(void)
 {
-	if (orig!=0) SDL_FreeSurface(orig);
+	if (orig!=0) SDL_DestroySurface(orig);
 	orig=0;
-	if (mask_visualization!=0) SDL_FreeSurface(mask_visualization);
+	if (mask_visualization!=0) SDL_DestroySurface(mask_visualization);
 	mask_visualization=0;
 
-	if (mask_collision!=0) SDL_FreeSurface(mask_collision);
+	if (mask_collision!=0) SDL_DestroySurface(mask_collision);
 	mask_collision=0;
 
-	if (collision_data!=0) sge_destroy_cmap(collision_data);
+	if (collision_data!=0) collision_destroy_map(collision_data);
 	collision_data=0;
 } /* CTile::free */ 
 
@@ -272,10 +257,15 @@ TILE_SOURCE::TILE_SOURCE(char *filename)
 	strcpy(fname,filename);
 	tmp_sfc=IMG_Load(fname);
 
-	sfc = SDL_CreateRGBSurface(SDL_HWSURFACE,tmp_sfc->w,tmp_sfc->h,32,0,0,0,AMASK);
-	SDL_SetAlpha(sfc,0,SDL_ALPHA_OPAQUE);
+	/* SDL3: Rmask/Gmask/Bmask=0 aqui faz o SDL escolher os masks default
+	   de 32bpp (sem canal alpha, equivalente a XRGB8888) -- o AMASK
+	   passado e ignorado nesse caso tanto no SDL2 quanto aqui; e assim
+	   mesmo que o codigo original se comportava. */
+	sfc = SDL_CreateSurface(tmp_sfc->w,tmp_sfc->h,SDL_PIXELFORMAT_XRGB8888);
+	SDL_SetSurfaceBlendMode(sfc,SDL_BLENDMODE_NONE);
+	SDL_SetSurfaceAlphaMod(sfc,SDL_ALPHA_OPAQUE);
 	SDL_BlitSurface(tmp_sfc,0,sfc,0);
-	SDL_FreeSurface(tmp_sfc);
+	SDL_DestroySurface(tmp_sfc);
 } /* TILE_SOURCE::TILE_SOURCE */ 
 
 
@@ -283,7 +273,7 @@ TILE_SOURCE::~TILE_SOURCE(void)
 {
 	delete fname;
 	fname=0;
-	SDL_FreeSurface(sfc);
+	SDL_DestroySurface(sfc);
 } /* TILE_SOURCE::~TILE_SOURCE */ 
 
 
@@ -307,10 +297,15 @@ bool TILE_SOURCE::load(FILE *fp)
 	strcpy(fname,tmp);
 	tmp_sfc=IMG_Load(fname);
 
-	sfc = SDL_CreateRGBSurface(SDL_HWSURFACE,tmp_sfc->w,tmp_sfc->h,32,0,0,0,AMASK);
-	SDL_SetAlpha(sfc,0,SDL_ALPHA_OPAQUE);
+	/* SDL3: Rmask/Gmask/Bmask=0 aqui faz o SDL escolher os masks default
+	   de 32bpp (sem canal alpha, equivalente a XRGB8888) -- o AMASK
+	   passado e ignorado nesse caso tanto no SDL2 quanto aqui; e assim
+	   mesmo que o codigo original se comportava. */
+	sfc = SDL_CreateSurface(tmp_sfc->w,tmp_sfc->h,SDL_PIXELFORMAT_XRGB8888);
+	SDL_SetSurfaceBlendMode(sfc,SDL_BLENDMODE_NONE);
+	SDL_SetSurfaceAlphaMod(sfc,SDL_ALPHA_OPAQUE);
 	SDL_BlitSurface(tmp_sfc,0,sfc,0);
-	SDL_FreeSurface(tmp_sfc);
+	SDL_DestroySurface(tmp_sfc);
 
 	return true;
 } /* TILE_SOURCE::load */ 

@@ -59,7 +59,7 @@ CExplosionObject::~CExplosionObject(void)
 
 
 
-bool CExplosionObject::cycle(unsigned char *keyboard,unsigned char *old_keyboard)
+bool CExplosionObject::cycle(const bool *keyboard,const bool *old_keyboard)
 {
 	timmer++;
 

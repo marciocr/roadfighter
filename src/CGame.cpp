@@ -313,20 +313,26 @@ CGame::~CGame(void)
 
 	TTF_CloseFont(font);
 
-	SDL_FreeSurface(player1_car);
-	SDL_FreeSurface(player2_car);
+	SDL_DestroySurface(player1_car);
+	SDL_DestroySurface(player2_car);
 
-	SDL_FreeSurface(empty_sfc);
-	SDL_FreeSurface(fuelscores_sfc);
-//	SDL_FreeSurface(start_sfc);
-	SDL_FreeSurface(checkpoint_sfc);
-	SDL_FreeSurface(goal_sfc);
-	SDL_FreeSurface(obstacles_sfc);
-	SDL_FreeSurface(pause_sfc);
+	SDL_DestroySurface(empty_sfc);
+	SDL_DestroySurface(fuelscores_sfc);
+//	SDL_DestroySurface(start_sfc);
+	SDL_DestroySurface(checkpoint_sfc);
+	SDL_DestroySurface(goal_sfc);
+	SDL_DestroySurface(obstacles_sfc);
+	SDL_DestroySurface(pause_sfc);
 
 	while(!focusing_objects.EmptyP()) focusing_objects.ExtractIni();
 
-	while(Mix_Playing(-1)!=0);
+	/* SDL3_mixer: Mix_Playing(-1) nao existe mais (nao ha mais "canais"
+	   pra contar). O busy-wait aqui existia pra nao liberar um Mix_Chunk
+	   que ainda estivesse tocando; MIX_DestroyAudio() (chamado por
+	   Sound_delete_sound) e safe mesmo com o audio ainda tocando -- ele so
+	   decrementa a referencia, e a destruicao de verdade so acontece
+	   quando a ultima track que usa esse audio parar, entao esse espera
+	   nao e mais necessaria. */
 
 	Sound_delete_sound(S_takefuel);
 	Sound_delete_sound(S_redlight);
@@ -431,7 +437,7 @@ bool CGame::level_completed(void)
 
 
 
-bool CGame::cycle(unsigned char *keyboard,unsigned char *old_keyboard)
+bool CGame::cycle(const bool *keyboard,const bool *old_keyboard)
 {
 	List<CObject> l;
 	CObject *o;
@@ -708,7 +714,7 @@ void CGame::draw(SDL_Surface *sfc,SDL_Rect logic_vp,CCarObject *focusing,float *
 	} /* if */ 
 	sx-=vp.x;
 	sy-=vp.y;
-	SDL_SetClipRect(sfc,&vp);
+	SDL_SetSurfaceClipRect(sfc,&vp);
 
 	if (game_remake_extras && current_level==3) {
 		/* 128-96 */ 
@@ -720,7 +726,7 @@ void CGame::draw(SDL_Surface *sfc,SDL_Rect logic_vp,CCarObject *focusing,float *
 		l.Rewind();
 		while(l.Iterate(t)) {
 			if (t->r.x==0 && t->r.y==0 && t->r.w==128 && t->r.h==96) {
-				SDL_Surface *tmp=SDL_CreateRGBSurface(0,128,96,32,0,0,0,0);
+				SDL_Surface *tmp=SDL_CreateSurface(128,96,SDL_PIXELFORMAT_XRGB8888);
 				SDL_Rect r1,r2;
 				r1.x=0;
 				r1.y=0;
@@ -738,7 +744,7 @@ void CGame::draw(SDL_Surface *sfc,SDL_Rect logic_vp,CCarObject *focusing,float *
 				r1.w=1;
 				r2.x=127;
 				SDL_BlitSurface(tmp,&r1,t->orig,&r2);
-				SDL_FreeSurface(tmp);
+				SDL_DestroySurface(tmp);
 			} /* if */ 
 		} /* if */ 
 	} /* if */ 
@@ -827,7 +833,7 @@ void CGame::draw(SDL_Surface *sfc,SDL_Rect logic_vp,CCarObject *focusing,float *
 
 
 
-	SDL_SetClipRect(sfc,0);
+	SDL_SetSurfaceClipRect(sfc,0);
 
 } /* CGame::draw */ 
 

@@ -88,20 +88,21 @@ CPlayerCarObject::CPlayerCarObject(int nx,int ny,List<CTile> *l,int first_tile,i
 
 	sound_timmer=0;
 
-	enginesound_channel=-1;
+	/* SDL3_mixer: cada carro do jogador tem sua propria MIX_Track dedicada
+	   pro som do motor e da derrapagem, ligada uma unica vez ao som base
+	   (game->S_carengine/S_carskid); o pitch e ajustado a cada frame via
+	   MIX_SetTrackFrequencyRatio (ver cycle()), em vez do antigo truque de
+	   resamplear manualmente o buffer PCM a cada tick. */
+	enginesound_track=0;
 	if (game->S_carengine != 0) {
-		S_carengine_working.allocated=1;
-		S_carengine_working.abuf=new Uint8[game->S_carengine->alen];
-		S_carengine_working.alen=game->S_carengine->alen;
-		S_carengine_working.volume=MIX_MAX_VOLUME;
+		enginesound_track=MIX_CreateTrack(mixer);
+		if (enginesound_track!=0) MIX_SetTrackAudio(enginesound_track,game->S_carengine);
 	}
 
-	skidsound_channel=-1;
-	if (game->S_carengine != 0) {
-		S_carskid_working.allocated=1;
-		S_carskid_working.abuf=new Uint8[game->S_carskid->alen];
-		S_carskid_working.alen=game->S_carskid->alen;
-		S_carskid_working.volume=MIX_MAX_VOLUME;
+	skidsound_track=0;
+	if (game->S_carskid != 0) {
+		skidsound_track=MIX_CreateTrack(mixer);
+		if (skidsound_track!=0) MIX_SetTrackAudio(skidsound_track,game->S_carskid);
 	}
 
 	goal_reached=false;
@@ -110,11 +111,13 @@ CPlayerCarObject::CPlayerCarObject(int nx,int ny,List<CTile> *l,int first_tile,i
 
 CPlayerCarObject::~CPlayerCarObject(void)
 {
+	if (enginesound_track!=0) MIX_DestroyTrack(enginesound_track);
+	if (skidsound_track!=0) MIX_DestroyTrack(skidsound_track);
 } /* CPlayerCarObject::~CPlayerCarObject */ 
 
 
 
-bool CPlayerCarObject::cycle(unsigned char *keyboard,unsigned char *old_keyboard)
+bool CPlayerCarObject::cycle(const bool *keyboard,const bool *old_keyboard)
 {
 	float f=float(-y_speed)/MAX_SPEED;
 
@@ -348,8 +351,7 @@ bool CPlayerCarObject::cycle(unsigned char *keyboard,unsigned char *old_keyboard
 			if ((sound_timmer&0x07)==0) {
 
 				float f;
-				unsigned int i,j,k;
-				Sint16 *ip,*ip2;
+
 /*
 				// 2 octave range: 0.25 - 1.0
 				f=(3.0F*(float(-y_speed)/MAX_SPEED)+1.0F)/4.0F;
@@ -369,76 +371,72 @@ bool CPlayerCarObject::cycle(unsigned char *keyboard,unsigned char *old_keyboard
 				if (f<0.8408964F) f=0.8408964F;
 				if (f>1.2599210F) f=1.2599210F;
 
+				/* SDL3_mixer: no lugar de resamplear manualmente o buffer
+				   PCM pra simular a variacao de pitch do motor (o que so
+				   dava pra fazer com o Mix_Chunk exposto do SDL2_mixer, e
+				   nao existe mais como opcao), ajustamos a taxa de
+				   frequencia da track em tempo real -- o motor toca em
+				   loop continuo, sem precisar reiniciar do zero a cada
+				   atualizacao (o que ate evita o pequeno "gliche" de
+				   retrigger que a versao antiga tinha). O panning
+				   esquerda/direita da tela dividida tambem vira
+				   MIX_SetTrackStereo em vez de fazer o downmix L+R na mao. */
+				if (enginesound_track!=0) {
+					MIX_SetTrackFrequencyRatio(enginesound_track,f);
 
-				ip=(Sint16 *)S_carengine_working.abuf;
-				ip2=(Sint16 *)game->S_carengine->abuf;
-				for(i=0,j=0;i<game->S_carengine->alen && 
-							((unsigned int)(j*f))*4<game->S_carengine->alen;i+=4,j++) {
-					k=(unsigned int)(j*f);
 					if (game->focusing_objects.Length()==1) {
-						ip[j*2]=ip2[k*2];		/* L */ 
-						ip[j*2+1]=ip2[k*2+1];	/* R */ 
+						MIX_SetTrackStereo(enginesound_track,0);
 					} else {
-						if (game->focusing_objects[0]==this) {
-							ip[j*2]=0;							/* L */ 
-							ip[j*2+1]=(ip2[k*2+1]+ip2[k*2])>>1;	/* R */ 
-						} else {
-							ip[j*2]=(ip2[k*2+1]+ip2[k*2])>>1;		/* L */ 
-							ip[j*2+1]=0;							/* R */ 
-						} /* if */ 
-					} /* if */ 
-				} /* if */ 
+						MIX_StereoGains gains;
 
-				if (enginesound_channel==-1) {
-					enginesound_channel=Mix_PlayChannel(-1,&S_carengine_working,0);
-				} else {
-					Mix_HaltChannel(enginesound_channel);
-					Mix_PlayChannel(enginesound_channel,&S_carengine_working,0);
-				} /* if */ 
+						if (game->focusing_objects[0]==this) {
+							gains.left=0.0F; gains.right=1.0F;
+						} else {
+							gains.left=1.0F; gains.right=0.0F;
+						} /* if */
+						MIX_SetTrackStereo(enginesound_track,&gains);
+					} /* if */
+
+					if (!MIX_TrackPlaying(enginesound_track)) {
+						SDL_PropertiesID props=SDL_CreateProperties();
+						SDL_SetNumberProperty(props,MIX_PROP_PLAY_LOOPS_NUMBER,-1);
+						MIX_PlayTrack(enginesound_track,props);
+						SDL_DestroyProperties(props);
+					} /* if */
+				} /* if */
 
 				if (state==5 || state==6) {
 					float f;
-					unsigned int i,j,k;
-					Sint16 *ip,*ip2;
 
 					if (state_timmer<16) {
 						f=1.0;
 					} else {
 						f=1.5;
-					} /* if */ 
+					} /* if */
 
-					ip=(Sint16 *)S_carskid_working.abuf;
-					ip2=(Sint16 *)game->S_carskid->abuf;
-					for(i=0,j=0;i<game->S_carskid->alen && 
-								((unsigned int)(j*f))*4<game->S_carskid->alen;i+=4,j++) {
-						k=(unsigned int)(j*f);
-						ip[j*2]=ip2[k*2];		/* L */ 
-						ip[j*2+1]=ip2[k*2+1];	/* R */ 
-					} /* if */ 
-
-					if (skidsound_channel==-1) {
-						skidsound_channel=Mix_PlayChannel(-1,&S_carskid_working,0);
-					} else {
-						Mix_HaltChannel(skidsound_channel);
-						Mix_PlayChannel(skidsound_channel,&S_carskid_working,0);
-					} /* if */ 
+					if (skidsound_track!=0) {
+						MIX_SetTrackFrequencyRatio(skidsound_track,f);
+						if (!MIX_TrackPlaying(skidsound_track)) {
+							SDL_PropertiesID props=SDL_CreateProperties();
+							SDL_SetNumberProperty(props,MIX_PROP_PLAY_LOOPS_NUMBER,-1);
+							MIX_PlayTrack(skidsound_track,props);
+							SDL_DestroyProperties(props);
+						} /* if */
+					} /* if */
 				} else {
-					if (skidsound_channel!=-1) {
-						Mix_HaltChannel(skidsound_channel);
-						skidsound_channel=-1;
-					} /* if */ 
-				} /* if */ 
-			} /* if */ 
-		} /* if */ 
+					if (skidsound_track!=0 && MIX_TrackPlaying(skidsound_track)) {
+						MIX_StopTrack(skidsound_track,0);
+					} /* if */
+				} /* if */
+			} /* if */
+		} /* if */
 	} else {
-		if (enginesound_channel!=-1) {
-			Mix_HaltChannel(enginesound_channel);
-			enginesound_channel=-1;
-		} /* if */ 
-		if (skidsound_channel!=-1) {
-			Mix_HaltChannel(skidsound_channel);
-			skidsound_channel=-1;
-		} /* if */ 
+		if (enginesound_track!=0 && MIX_TrackPlaying(enginesound_track)) {
+			MIX_StopTrack(enginesound_track,0);
+		} /* if */
+		if (skidsound_track!=0 && MIX_TrackPlaying(skidsound_track)) {
+			MIX_StopTrack(skidsound_track,0);
+		} /* if */
 	} /* if */ 
 
 	if (state!=4 && state!=0) {

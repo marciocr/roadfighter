@@ -34,6 +34,10 @@
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
+/* SDL3: SDL_DisplayFormat() nao existe mais; convertemos explicitamente
+   para o formato de pixel da janela via SDL_ConvertSurface. */
+extern SDL_Surface *screen_sfc;
+
 int gameover_time=25;
 
 int CRoadFighter::gameover_cycle(void)
@@ -78,7 +82,7 @@ void CRoadFighter::gameover_draw(SDL_Surface *screen)
 {
 	SDL_Rect r;
 
-	SDL_FillRect(screen,0,0);
+	SDL_FillSurfaceRect(screen,0,0);
 
 	/* Draw Scoreboard: */ 
 	if (gameover_state==1) {
@@ -94,7 +98,7 @@ void CRoadFighter::gameover_draw(SDL_Surface *screen)
 		SDL_Surface *text_sfc;
 		float f=1.0;
 
-		text_sfc=SDL_DisplayFormat(gameover_sfc);
+		text_sfc=SDL_ConvertSurface(gameover_sfc,screen_sfc->format);
 		f=float(gameover_timmer)/gameover_time;	
 		if (f>=1.0) f=1.0;
 		if (f<1.0) surface_fader(text_sfc,f,f,f,0);
@@ -103,7 +107,7 @@ void CRoadFighter::gameover_draw(SDL_Surface *screen)
 		r.w=text_sfc->w;
 		r.h=text_sfc->h;
 		SDL_BlitSurface(text_sfc,0,screen,&r);
-		SDL_FreeSurface(text_sfc);
+		SDL_DestroySurface(text_sfc);
 	}
 
 } /* CRoadFighter::gameover_draw */ 

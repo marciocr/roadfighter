@@ -117,8 +117,8 @@ CRoadFighter::CRoadFighter(void)
 				   "        ";
 		c.r=c.g=c.b=128;
 
-		credits_sfc=TTF_RenderText_Blended(font1,text,c);
-		credits2_sfc=TTF_RenderText_Blended(font1,text,c);
+		credits_sfc=TTF_RenderText_Blended(font1,text,0,c);
+		credits2_sfc=TTF_RenderText_Blended(font1,text,0,c);
 	}
 
 	levelintro_sfc=0;
@@ -129,15 +129,15 @@ CRoadFighter::CRoadFighter(void)
 		SDL_Surface *sfc;
 
 		sfc = SDL_ConvertSurface(konami1_sfc, screen_sfc->format);
-		SDL_FreeSurface(konami1_sfc);
+		SDL_DestroySurface(konami1_sfc);
 		konami1_sfc=sfc;
 
 		sfc = SDL_ConvertSurface(konami2_sfc, screen_sfc->format);
-		SDL_FreeSurface(konami2_sfc);
+		SDL_DestroySurface(konami2_sfc);
 		konami2_sfc=sfc;
 
 		sfc = SDL_ConvertSurface(tittle_sfc, screen_sfc->format);
-		SDL_FreeSurface(tittle_sfc);
+		SDL_DestroySurface(tittle_sfc);
 		tittle_sfc=sfc;
 
 		/* ... */ 
@@ -159,22 +159,22 @@ CRoadFighter::~CRoadFighter(void)
 {
 	output_debug_message("CRoadFighter: in destructor...\n");
 
-	SDL_FreeSurface(retroremakes_sfc);
-	SDL_FreeSurface(disclaimer_sfc);
-	SDL_FreeSurface(konami1_sfc);
-	SDL_FreeSurface(konami2_sfc);
-	SDL_FreeSurface(tittle_sfc);
-	SDL_FreeSurface(arrow_sfc);
-	SDL_FreeSurface(scoreboard_sfc);
-	SDL_FreeSurface(scoreboard2_sfc);
-	SDL_FreeSurface(scoreboardleft_sfc);
-	SDL_FreeSurface(gamemap_sfc);
-	SDL_FreeSurface(minicar1_sfc);
-	SDL_FreeSurface(minicar2_sfc);
-	SDL_FreeSurface(gameover_sfc);
-	SDL_FreeSurface(credits_sfc);
-	SDL_FreeSurface(credits2_sfc);
-	if (levelintro_sfc!=0) SDL_FreeSurface(levelintro_sfc);
+	SDL_DestroySurface(retroremakes_sfc);
+	SDL_DestroySurface(disclaimer_sfc);
+	SDL_DestroySurface(konami1_sfc);
+	SDL_DestroySurface(konami2_sfc);
+	SDL_DestroySurface(tittle_sfc);
+	SDL_DestroySurface(arrow_sfc);
+	SDL_DestroySurface(scoreboard_sfc);
+	SDL_DestroySurface(scoreboard2_sfc);
+	SDL_DestroySurface(scoreboardleft_sfc);
+	SDL_DestroySurface(gamemap_sfc);
+	SDL_DestroySurface(minicar1_sfc);
+	SDL_DestroySurface(minicar2_sfc);
+	SDL_DestroySurface(gameover_sfc);
+	SDL_DestroySurface(credits_sfc);
+	SDL_DestroySurface(credits2_sfc);
+	if (levelintro_sfc!=0) SDL_DestroySurface(levelintro_sfc);
 
 	delete minicar1_tile;
 	delete minicar2_tile;
@@ -304,7 +304,7 @@ void CRoadFighter::scoreboard_draw(int x,int y,SDL_Surface *screen)
 				r.y=i;
 				r.w=tmp2;
 				r.h=1;
-				SDL_FillRect(screen,&r,SDL_MapRGB(screen->format,255,255,255));
+				SDL_FillSurfaceRect(screen,&r,SDL_MapRGB(SDL_GetPixelFormatDetails(screen->format),SDL_GetSurfacePalette(screen),255,255,255));
 			} /* for */ 
 			j--;
 		} /* while */ 
@@ -328,7 +328,7 @@ void CRoadFighter::scoreboard_draw(int x,int y,SDL_Surface *screen)
 				r.y=i;
 				r.w=tmp2;
 				r.h=1;
-				SDL_FillRect(screen,&r,SDL_MapRGB(screen->format,255,255,255));
+				SDL_FillSurfaceRect(screen,&r,SDL_MapRGB(SDL_GetPixelFormatDetails(screen->format),SDL_GetSurfacePalette(screen),255,255,255));
 			} /* for */ 
 			j--;
 		} /* while */ 
@@ -383,13 +383,13 @@ void CRoadFighter::scoreboard_draw(int x,int y,SDL_Surface *screen)
 		sprintf(tmp,"%i",high_score);
 		c.r=c.b=0;
 		c.g=255;
-		sfc=TTF_RenderText_Blended(font1,tmp,c);
+		sfc=TTF_RenderText_Blended(font1,tmp,0,c);
 		r.x=x+106-sfc->w;
 		r.y=25;
 		r.w=sfc->w;
 		r.h=sfc->h;
 		SDL_BlitSurface(sfc,0,screen,&r);
-		SDL_FreeSurface(sfc);
+		SDL_DestroySurface(sfc);
 
 		/* Scores: */ 
 		game->get_scores(&l);
@@ -405,13 +405,13 @@ void CRoadFighter::scoreboard_draw(int x,int y,SDL_Surface *screen)
 					c.r=255;
 					c.g=255;
 				} /* if */ 
-				sfc=TTF_RenderText_Blended(font1,tmp,c);
+				sfc=TTF_RenderText_Blended(font1,tmp,0,c);
 				r.x=x+score_x-sfc->w;
 				r.y=68;
 				r.w=sfc->w;
 				r.h=sfc->h;
 				SDL_BlitSurface(sfc,0,screen,&r);
-				SDL_FreeSurface(sfc);
+				SDL_DestroySurface(sfc);
 			} /* if */ 
 			j++;
 		} /* while */ 
