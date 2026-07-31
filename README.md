@@ -47,13 +47,23 @@ Special Thanks To:
 **Necessary dependencies**
 --------------------------
 
-You will need to have the following dependencies installed:
+The game was ported from SDL2 to SDL3. You will need to have the following
+dependencies installed:
 
-**SDL2, SDL2_image, SDL2_mixer, SDL2_ttf, ttf-dejavu**
+**SDL3, SDL3_image, SDL3_ttf, SDL3_mixer, ttf-dejavu**
 
 On Debian/Ubuntu you can get all necessary packages by typing:
 
-    # apt install gcc libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev make ttf-dejavu
+    # apt install gcc libsdl3-dev libsdl3-image-dev libsdl3-ttf-dev libsdl3-mixer-dev make ttf-dejavu
+
+On Fedora (`SDL3_mixer` isn't packaged yet at the time of writing, so it's
+left out below — see https://bugzilla.redhat.com/show_bug.cgi?id=2454358):
+
+    # dnf install gcc-c++ SDL3-devel SDL3_image-devel SDL3_ttf-devel make dejavu-serif-fonts
+
+On Arch Linux:
+
+    # pacman -S gcc sdl3 sdl3_image sdl3_ttf sdl3_mixer make ttf-dejavu
 
 Compilation:
 ------------
@@ -77,3 +87,4 @@ License
 * Copyright (c) 2003-2009 **Santi Ontanon** (Brain Games) - This file was
 officially downloaded from http://roadfighter.jorito.net
 * Copyright (c) 2017-2019 Work continued by **Carlos Donizete Froes [a.k.a coringao]**
+* Copyright (c) 2026 Work continued by **Marcio Carneiro Rodrigues**
