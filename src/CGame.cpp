@@ -101,7 +101,7 @@ void CGame::init_game(char *mapname)
 
 	init_quick_tables();
 
-	font=TTF_OpenFont("/usr/share/fonts/truetype/dejavu/DejaVuSerif-Italic.ttf", 12);
+	font=TTF_OpenFont("fonts/DejaVuSerif-Italic.ttf", 12);
 
 	player1_car=IMG_Load("graphics/car1.bmp");
 	player2_car=IMG_Load("graphics/car2.bmp");

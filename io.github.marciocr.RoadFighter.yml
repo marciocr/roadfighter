@@ -1,0 +1,93 @@
+app-id: io.github.marciocr.RoadFighter
+runtime: org.freedesktop.Platform
+runtime-version: '25.08'
+sdk: org.freedesktop.Sdk
+command: roadfighter
+
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --socket=pulseaudio
+  - --device=dri
+
+modules:
+  - name: SDL3
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DSDL_SHARED=ON
+      - -DSDL_STATIC=OFF
+      - -DSDL_TEST_LIBRARY=OFF
+    sources:
+      - type: git
+        url: https://github.com/libsdl-org/SDL.git
+        tag: release-3.4.12
+
+  - name: SDL3_image
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DBUILD_SHARED_LIBS=ON
+      - -DSDLIMAGE_VENDORED=ON
+      - -DSDLIMAGE_BMP=ON
+      - -DSDLIMAGE_JPG=ON
+      - -DSDLIMAGE_AVIF=OFF
+      - -DSDLIMAGE_WEBP=OFF
+      - -DSDLIMAGE_TIF=OFF
+      - -DSDLIMAGE_PNG=ON
+    sources:
+      - type: git
+        url: https://github.com/libsdl-org/SDL_image.git
+        tag: release-3.2.6
+
+  - name: SDL3_ttf
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DBUILD_SHARED_LIBS=ON
+      - -DSDLTTF_VENDORED=OFF
+      - -DSDLTTF_HARFBUZZ=ON
+    sources:
+      - type: git
+        url: https://github.com/libsdl-org/SDL_ttf.git
+        tag: release-3.2.2
+
+  - name: SDL3_mixer
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DBUILD_SHARED_LIBS=ON
+      - -DSDLMIXER_VENDORED=ON
+      - -DSDLMIXER_EXAMPLES=OFF
+      - -DSDLMIXER_TESTS=OFF
+      - -DSDLMIXER_MP3=OFF
+      - -DSDLMIXER_FLAC=OFF
+      - -DSDLMIXER_MOD=OFF
+      - -DSDLMIXER_MIDI=OFF
+      - -DSDLMIXER_OPUS=OFF
+      - -DSDLMIXER_WAVPACK=OFF
+    sources:
+      - type: git
+        url: https://github.com/libsdl-org/SDL_mixer.git
+        tag: release-3.2.4
+
+  - name: roadfighter
+    buildsystem: simple
+    build-commands:
+      - make clean
+      - make
+      - install -Dm755 roadfighter /app/bin/roadfighter.bin
+      - install -d /app/bin/graphics /app/bin/sound /app/bin/maps /app/bin/fonts
+      - cp -r graphics/. /app/bin/graphics/
+      - cp -r sound/. /app/bin/sound/
+      - cp -r maps/. /app/bin/maps/
+      - cp -r fonts/. /app/bin/fonts/
+      - install -Dm755 roadfighter-wrapper.sh /app/bin/roadfighter
+      - install -Dm644 io.github.marciocr.RoadFighter.desktop /app/share/applications/io.github.marciocr.RoadFighter.desktop
+      - install -Dm644 io.github.marciocr.RoadFighter.metainfo.xml /app/share/metainfo/io.github.marciocr.RoadFighter.metainfo.xml
+      - install -Dm644 graphics/roadfighter.png /app/share/icons/hicolor/256x256/apps/io.github.marciocr.RoadFighter.png
+    sources:
+      - type: dir
+        path: .
+      - type: script
+        dest-filename: roadfighter-wrapper.sh
+        commands:
+          - "#!/bin/sh"
+          - cd /app/bin
+          - exec /app/bin/roadfighter.bin "$@"

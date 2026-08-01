@@ -26,7 +26,14 @@ OBJS = \
 	$(SRCDIR)/sound.o								\
 	$(SRCDIR)/main.o
 
-CXX = gcc
+CXX = g++
+# Isto e' um projeto C++ (usa new/delete, classes, etc). "gcc" ate compila
+# arquivos .cpp (ele detecta a linguagem pela extensao), mas na hora de
+# linkar o binario final ele nao linka libstdc++ automaticamente como o
+# g++ faz -- isso e' invisivel a maior parte do tempo se alguma outra lib
+# do link puxa libstdc++ transitivamente, mas falha ("undefined reference
+# to operator new/delete") em ambientes com um toolchain mais minimo, como
+# dentro do sandbox de build do Flatpak.
 # SDL3: SDL3_mixer ainda nao esta empacotado (nem no Fedora, nem neste
 # ambiente) -- ver RHBZ #2454358. Chamamos o pkg-config dele separado dos
 # outros (com stderr silenciado) de proposito: se um unico `pkg-config`

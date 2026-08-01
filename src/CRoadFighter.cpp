@@ -85,10 +85,10 @@ CRoadFighter::CRoadFighter(void)
 
 	for(i=0;i<SDL_SCANCODE_COUNT;i++) old_keyboard[i]=0;
 
-	font1=TTF_OpenFont("/usr/share/fonts/truetype/dejavu/DejaVuSerif-Italic.ttf", 12);
-	font2big=TTF_OpenFont("/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf", 21);
-	font2medium=TTF_OpenFont("/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf", int(FONT_SIZE*0.7));
-	font2small=TTF_OpenFont("/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf", int(FONT_SIZE*0.70));
+	font1=TTF_OpenFont("fonts/DejaVuSerif-Italic.ttf", 12);
+	font2big=TTF_OpenFont("fonts/DejaVuSerif-Bold.ttf", 21);
+	font2medium=TTF_OpenFont("fonts/DejaVuSerif-Bold.ttf", int(FONT_SIZE*0.7));
+	font2small=TTF_OpenFont("fonts/DejaVuSerif-Bold.ttf", int(FONT_SIZE*0.70));
 
 	disclaimer_sfc=IMG_Load("graphics/gnugame.jpg");
 	retroremakes_sfc=IMG_Load("graphics/retroremakes.bmp");

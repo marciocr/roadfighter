@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.marciocr.RoadFighter</id>
+  <name>Road Fighter</name>
+  <summary>Unofficial remake of Konami's Road Fighter</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0-or-later</project_license>
+  <description>
+    <p>
+      Road Fighter Remake is an unofficial, not-for-profit remake of Konami's
+      ROAD FIGHTER, originally released in 1985 for the MSX home computer
+      systems. Dodge traffic, manage your fuel, and race to the finish line
+      across six stages, alone or with a friend in split-screen.
+    </p>
+  </description>
+  <launchable type="desktop-id">io.github.marciocr.RoadFighter.desktop</launchable>
+  <url type="homepage">https://github.com/marciocr/roadfighter-1</url>
+  <content_rating type="oars-1.1">
+    <content_attribute id="violence-cartoon">mild</content_attribute>
+  </content_rating>
+</component>

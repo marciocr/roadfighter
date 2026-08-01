@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Road Fighter
+Comment=Unofficial remake of Konami's Road Fighter (1985, MSX)
+Exec=roadfighter
+Icon=io.github.marciocr.RoadFighter
+Categories=Game;ArcadeGame;
+Terminal=false
