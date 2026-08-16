@@ -15,6 +15,16 @@
   </description>
   <launchable type="desktop-id">io.github.marciocr.RoadFighter.desktop</launchable>
   <url type="homepage">https://github.com/marciocr/roadfighter-1</url>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Title screen</caption>
+      <image>https://raw.githubusercontent.com/marciocr/roadfighter-1/sdl3-port/screenshots/menu.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Racing at the starting checkpoint</caption>
+      <image>https://raw.githubusercontent.com/marciocr/roadfighter-1/sdl3-port/screenshots/gameplay.png</image>
+    </screenshot>
+  </screenshots>
   <developer id="io.github.marciocr">
     <name>Marcio Carneiro Rodrigues</name>
   </developer>
