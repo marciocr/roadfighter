@@ -1,2 +1,5 @@
 *.o
 roadfighter
+.release-build/
+build-dir/
+.flatpak-builder/
