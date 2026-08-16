@@ -15,7 +15,17 @@
   </description>
   <launchable type="desktop-id">io.github.marciocr.RoadFighter.desktop</launchable>
   <url type="homepage">https://github.com/marciocr/roadfighter-1</url>
+  <developer id="io.github.marciocr">
+    <name>Marcio Carneiro Rodrigues</name>
+  </developer>
   <content_rating type="oars-1.1">
     <content_attribute id="violence-cartoon">mild</content_attribute>
   </content_rating>
+  <releases>
+    <release version="1.0.0" date="2026-08-16">
+      <description>
+        <p>SDL3 port of the Road Fighter remake, packaged as a Flatpak.</p>
+      </description>
+    </release>
+  </releases>
 </component>
