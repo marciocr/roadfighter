@@ -32,6 +32,7 @@
 #include "CGame.h"
 #include "CRoadFighter.h"
 #include "auxiliar.h"
+#include "gamepad.h"
 
 #include "debug.h"
 
@@ -205,7 +206,12 @@ bool CRoadFighter::cycle(void)
 {
 	int i,old_state=state;
 	bool retval=true;
-	keyboard = SDL_GetKeyboardState(NULL);
+	const bool *sdl_keyboard=SDL_GetKeyboardState(NULL);
+
+	for(i=0;i<SDL_SCANCODE_COUNT;i++) combined_keyboard[i]=sdl_keyboard[i];
+	Gamepad_apply_to_keys(combined_keyboard,left_key,right_key,fire_key,
+										 left2_key,right2_key,fire2_key);
+	keyboard = combined_keyboard;
 
 	switch(state) {
 	case PRESENTATION_STATE:state=presentation_cycle();

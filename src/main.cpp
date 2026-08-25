@@ -39,6 +39,7 @@
 #include "CGame.h"
 #include "CRoadFighter.h"
 #include "auxiliar.h"
+#include "gamepad.h"
 
 #include "debug.h"
 
@@ -146,6 +147,7 @@ SDL_Surface* initializeSDL(Uint64 moreflags)
 
 void finalizeSDL()
 {
+	Gamepad_finalization();
 	TTF_Quit();
 //	Sound_release();
 	SDL_Quit();
@@ -188,6 +190,8 @@ int main(int argc, char** argv)
 	time=init_time=GetTickCount();
 	screen_sfc = initializeSDL((fullscreen ? SDL_WINDOW_FULLSCREEN : 0));
 	if (screen_sfc==0) return 0;
+
+	Gamepad_initialization();
 
 	game=new CRoadFighter();
 
@@ -279,6 +283,13 @@ FIXME: the code below is a big copy/paste; it should be in a separate function i
                    SDL_EVENT_* para todo tipo de evento. */
                 case SDL_EVENT_QUIT:
                     quit = true;
+                    break;
+
+                /* Gamepad hotplug: abre/fecha o controle e o encaixa no
+                   proximo slot de jogador livre (ver gamepad.cpp). */
+                case SDL_EVENT_GAMEPAD_ADDED:
+                case SDL_EVENT_GAMEPAD_REMOVED:
+                    Gamepad_handle_event(event);
                     break;
             } /* switch */
         } /* while */

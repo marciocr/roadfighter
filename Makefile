@@ -19,6 +19,7 @@ OBJS = \
 	$(SRCDIR)/CTile.o			$(SRCDIR)/collision.o			\
 	$(SRCDIR)/auxiliar.o			$(SRCDIR)/configuration.o		\
 	$(SRCDIR)/debug.o			$(SRCDIR)/filehandling.o		\
+	$(SRCDIR)/gamepad.o								\
 	$(SRCDIR)/gameover_state.o		$(SRCDIR)/interlevel_state.o		\
 	$(SRCDIR)/konami_state.o		$(SRCDIR)/loadmg2.o			\
 	$(SRCDIR)/menu_state.o			$(SRCDIR)/playing_state.o		\

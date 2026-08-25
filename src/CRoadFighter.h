@@ -139,6 +139,11 @@ private:
 	const bool *keyboard;
 	bool old_keyboard[SDL_SCANCODE_COUNT];
 
+	/* Mutable snapshot of SDL_GetKeyboardState(), with connected gamepads'
+	   input folded in (see gamepad.h). "keyboard" points here during normal
+	   play; replay loading temporarily points it elsewhere instead. */
+	bool combined_keyboard[SDL_SCANCODE_COUNT];
+
 	TTF_Font *font1;
 	TTF_Font *font2big,*font2medium,*font2small;
 

@@ -9,6 +9,10 @@ finish-args:
   - --socket=fallback-x11
   - --socket=pulseaudio
   - --device=dri
+  # Gamepad support (SDL3): the Flatpak sandbox does not expose /dev/input
+  # by default, and there's no portal for raw joystick/gamepad access, so
+  # SDL's Linux joystick backend can't see any controller without this.
+  - --device=all
 
 modules:
   - name: SDL3
