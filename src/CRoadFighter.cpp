@@ -32,6 +32,7 @@
 #include "CGame.h"
 #include "CRoadFighter.h"
 #include "auxiliar.h"
+#include "gamepad.h"
 
 #include "debug.h"
 
@@ -107,13 +108,20 @@ CRoadFighter::CRoadFighter(void)
 
 	{
 		SDL_Color c;
+		/* SDL_ttf espera UTF-8, mas este arquivo e latin-1: por isso os
+		   acentos vao como bytes UTF-8 escapados ("\xC3\xB1" = n com til). */
 		char *text=	   "        "
-				   "Game created for the RETROREMAKES REMAKE COMPETITION"
-				   "        "
-				   "PROGRAMMING: Santi Ontañón (Brain)    "
-				   "GRAPHICS: Miikka Poikela (McBain)     "
+				   "THIS VERSION -- SDL3 PORT, FLATPAK, GAMEPAD AND OPTIONS MENUS: Marcio Carneiro Rodrigues"
+				   "        ****        "
+				   "ORIGINAL REMAKE by Brain Games, created for the RETROREMAKES REMAKE COMPETITION    "
+				   "PROGRAMMING: Santi Onta\xC3\xB1\xC3\xB3n (Brain)    "
+				   "GRAPHICS: Miikka Poikela (McBain)    "
 				   "MUSIC/SFX: Jorrith Schaap (Jorito)    "
-				   "BETA TESTING: Jason Eames (JEames), Miikka Poikela (McBain), Jorrith Schaap (Jorito), Santi Ontañón (Brain)"
+				   "BETA TESTING: Jason Eames (JEames), Miikka Poikela (McBain), Jorrith Schaap (Jorito), Santi Onta\xC3\xB1\xC3\xB3n (Brain)    "
+				   "LINUX PORT: Manuel Bilderbeek    "
+				   "CONTINUED WORK: Carlos Donizete Froes (coringao)"
+				   "        ****        "
+				   "ORIGINAL GAME: ROAD FIGHTER (C) KONAMI 1984 (ARCADE), 1985 (MSX)"
 				   "        ";
 		c.r=c.g=c.b=128;
 
@@ -205,7 +213,13 @@ bool CRoadFighter::cycle(void)
 {
 	int i,old_state=state;
 	bool retval=true;
-	keyboard = SDL_GetKeyboardState(NULL);
+	const bool *sdl_keyboard=SDL_GetKeyboardState(NULL);
+
+	for(i=0;i<SDL_SCANCODE_COUNT;i++) combined_keyboard[i]=sdl_keyboard[i];
+	Gamepad_apply_to_keys(combined_keyboard,state==MENU_STATE,
+						  input1,left_key,right_key,fire_key,
+						  input2,left2_key,right2_key,fire2_key);
+	keyboard = combined_keyboard;
 
 	switch(state) {
 	case PRESENTATION_STATE:state=presentation_cycle();

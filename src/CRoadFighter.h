@@ -78,6 +78,7 @@ private:
 	/* keyboard: */ 
 	int left_key,right_key,fire_key;
 	int left2_key,right2_key,fire2_key;
+	int input1,input2;	/* INPUT_KEYBOARD/INPUT_GAMEPAD1/INPUT_GAMEPAD2 (see gamepad.h) */
 
 	/* Graphic data: */ 
 	SDL_Surface *disclaimer_sfc,*retroremakes_sfc;
@@ -138,6 +139,11 @@ private:
 	   retorna no SDL3 (antes era unsigned char* no SDL1.2/2). */
 	const bool *keyboard;
 	bool old_keyboard[SDL_SCANCODE_COUNT];
+
+	/* Mutable snapshot of SDL_GetKeyboardState(), with connected gamepads'
+	   input folded in (see gamepad.h). "keyboard" points here during normal
+	   play; replay loading temporarily points it elsewhere instead. */
+	bool combined_keyboard[SDL_SCANCODE_COUNT];
 
 	TTF_Font *font1;
 	TTF_Font *font2big,*font2medium,*font2small;

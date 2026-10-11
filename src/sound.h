@@ -61,6 +61,15 @@ void Sound_unpause_music(void);
 
 void Sound_music_volume(int volume);
 
+/* Volumes mestre do menu AUDIO, de 0 a SOUND_VOLUME_STEPS: */
+#define SOUND_VOLUME_STEPS 10
+int Sound_get_music_master(void);
+int Sound_get_sfx_master(void);
+void Sound_set_music_master(int v);
+void Sound_set_sfx_master(int v);
+/* Ganho (0.0-1.0) pra quem cria suas proprias MIX_Track de efeito: */
+float Sound_sfx_gain(void);
+
 /* These functions are AGRESIVE! (i.e. they actually STOP SDL_mixer and restart it) */
 void Stop_playback(void);
 void Resume_playback(void);

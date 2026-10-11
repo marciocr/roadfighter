@@ -59,6 +59,14 @@ int n_channels=-1;
    de um Stop_playback()/Resume_playback() (que destroem e recriam a
    track de musica do zero -- ver comentario em Resume_playback). */
 static int music_loops=0;
+/* Volumes escolhidos pelo jogador no menu AUDIO (0..SOUND_VOLUME_STEPS).
+   Eles multiplicam o volume que o jogo pede em cada chamada (que continua
+   na escala 0..MIX_MAX_VOLUME, inclusive nos fades de musica). */
+static int music_master=SOUND_VOLUME_STEPS;
+static int sfx_master=SOUND_VOLUME_STEPS;
+/* Ultimo volume de musica pedido pelo jogo, pra reaplicar quando o
+   jogador muda o volume mestre com a musica tocando. */
+static int music_volume=MIX_MAX_VOLUME;
 /* Indice "round robin" pra escolher a proxima track livre do pool, no
    lugar da antiga escolha automatica de canal do Mix_PlayChannel(-1,...). */
 static int next_channel=0;
@@ -75,6 +83,18 @@ static void destroy_track_pool(void)
 	if (music_track!=0) MIX_DestroyTrack(music_track);
 	music_track=0;
 } /* destroy_track_pool */
+
+
+static float sfx_gain(int volume)
+{
+	return (float(volume)/float(MIX_MAX_VOLUME))*(float(sfx_master)/float(SOUND_VOLUME_STEPS));
+} /* sfx_gain */
+
+
+float Sound_sfx_gain(void)
+{
+	return sfx_gain(MIX_MAX_VOLUME);
+} /* Sound_sfx_gain */
 
 
 static int next_pool_channel(void)
@@ -289,11 +309,10 @@ void Sound_delete_sound(SOUNDT s)
 
 int Sound_play(SOUNDT s)
 {
-	/* Reproducao solta (fire-and-forget): o proprio SDL_mixer gerencia uma
-	   track temporaria internamente e a descarta ao terminar -- equivalente
-	   direto ao antigo Mix_PlayChannel(-1,s,0). */
-	if (sound_enabled) return MIX_PlayAudio(mixer,s) ? 0 : -1;
-	return -1;
+	/* Antes era reproducao solta via MIX_PlayAudio() (equivalente direto ao
+	   antigo Mix_PlayChannel(-1,s,0)), mas ela nao deixa escolher o volume,
+	   e precisamos aplicar o volume de efeitos escolhido no menu AUDIO. */
+	return Sound_play(s,MIX_MAX_VOLUME);
 } /* Sound_play */
 
 
@@ -303,7 +322,7 @@ int Sound_play(SOUNDT s,int volume)
 		int ch=next_pool_channel();
 		if (ch<0) return -1;
 		MIX_SetTrackAudio(track_pool[ch],s);
-		MIX_SetTrackGain(track_pool[ch],float(volume)/float(MIX_MAX_VOLUME));
+		MIX_SetTrackGain(track_pool[ch],sfx_gain(volume));
 		MIX_PlayTrack(track_pool[ch],0);
 		return ch;
 	} /* if */
@@ -319,7 +338,7 @@ int Sound_play_continuous(SOUNDT s)
 
 		if (ch<0) return -1;
 		MIX_SetTrackAudio(track_pool[ch],s);
-		MIX_SetTrackGain(track_pool[ch],1.0F);
+		MIX_SetTrackGain(track_pool[ch],sfx_gain(MIX_MAX_VOLUME));
 		props=SDL_CreateProperties();
 		SDL_SetNumberProperty(props,MIX_PROP_PLAY_LOOPS_NUMBER,-1);
 		MIX_PlayTrack(track_pool[ch],props);
@@ -338,7 +357,7 @@ int Sound_play_continuous(SOUNDT s,int volume)
 
 		if (ch<0) return -1;
 		MIX_SetTrackAudio(track_pool[ch],s);
-		MIX_SetTrackGain(track_pool[ch],float(volume)/float(MIX_MAX_VOLUME));
+		MIX_SetTrackGain(track_pool[ch],sfx_gain(volume));
 		props=SDL_CreateProperties();
 		SDL_SetNumberProperty(props,MIX_PROP_PLAY_LOOPS_NUMBER,-1);
 		MIX_PlayTrack(track_pool[ch],props);
@@ -353,7 +372,7 @@ void Sound_play_ch(SOUNDT s,int ch)
 {
 	if (sound_enabled && ch>=0 && ch<n_channels) {
 		MIX_SetTrackAudio(track_pool[ch],s);
-		MIX_SetTrackGain(track_pool[ch],1.0F);
+		MIX_SetTrackGain(track_pool[ch],sfx_gain(MIX_MAX_VOLUME));
 		MIX_PlayTrack(track_pool[ch],0);
 	} /* if */
 } /* Sound_play_ch */
@@ -363,7 +382,7 @@ void Sound_play_ch(SOUNDT s,int ch,int volume)
 {
 	if (sound_enabled && ch>=0 && ch<n_channels) {
 		MIX_SetTrackAudio(track_pool[ch],s);
-		MIX_SetTrackGain(track_pool[ch],float(volume)/float(MIX_MAX_VOLUME));
+		MIX_SetTrackGain(track_pool[ch],sfx_gain(volume));
 		MIX_PlayTrack(track_pool[ch],0);
 	} /* if */
 } /* Sound_play_ch */
@@ -467,5 +486,36 @@ void Sound_music_volume(int volume)
 {
 	if (volume<0) volume=0;
 	if (volume>127) volume=127;
-	if (sound_enabled) MIX_SetTrackGain(music_track,float(volume)/float(MIX_MAX_VOLUME));
+	music_volume=volume;
+	if (sound_enabled) MIX_SetTrackGain(music_track,
+					   (float(volume)/float(MIX_MAX_VOLUME))*(float(music_master)/float(SOUND_VOLUME_STEPS)));
 } /* Sound_music_volume */
+
+
+int Sound_get_music_master(void)
+{
+	return music_master;
+} /* Sound_get_music_master */
+
+
+int Sound_get_sfx_master(void)
+{
+	return sfx_master;
+} /* Sound_get_sfx_master */
+
+
+void Sound_set_music_master(int v)
+{
+	if (v<0) v=0;
+	if (v>SOUND_VOLUME_STEPS) v=SOUND_VOLUME_STEPS;
+	music_master=v;
+	Sound_music_volume(music_volume);
+} /* Sound_set_music_master */
+
+
+void Sound_set_sfx_master(int v)
+{
+	if (v<0) v=0;
+	if (v>SOUND_VOLUME_STEPS) v=SOUND_VOLUME_STEPS;
+	sfx_master=v;
+} /* Sound_set_sfx_master */

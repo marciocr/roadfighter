@@ -42,6 +42,7 @@
 #include "CGame.h"
 #include "CRoadFighter.h"
 #include "auxiliar.h"
+#include "gamepad.h"
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
@@ -49,6 +50,33 @@ const int EFFECT_LENGTH=25;
 const int TEXT_EFFECT_LENGTH=16;
 
 extern int start_level;
+extern void set_fullscreen(bool f);
+extern bool get_fullscreen(void);
+
+/* Menus (menu_current_menu): */
+enum {MENU_MAIN=0, MENU_OPTIONS, MENU_KEYS1, MENU_KEYS2, MENU_ONE_PLAYER, MENU_TWO_PLAYERS,
+	  MENU_AUDIO, MENU_VIDEO, MENU_CONTROLS};
+
+
+static const char *input_device_name(int input)
+{
+	switch(input) {
+	case INPUT_GAMEPAD1:return Gamepad_connected(0) ? "GAMEPAD 1":"GAMEPAD 1 (NOT CONNECTED)";
+	case INPUT_GAMEPAD2:return Gamepad_connected(1) ? "GAMEPAD 2":"GAMEPAD 2 (NOT CONNECTED)";
+	default:return "KEYBOARD";
+	} /* switch */
+} /* input_device_name */
+
+
+/* Next device in KEYBOARD -> GAMEPAD 1 -> GAMEPAD 2, skipping the gamepad
+   the other player is already using. */
+static int next_input_device(int input,int other,int dir)
+{
+	do {
+		input=(input+dir+N_INPUT_DEVICES)%N_INPUT_DEVICES;
+	} while(input!=INPUT_KEYBOARD && input==other);
+	return input;
+} /* next_input_device */
 
 int CRoadFighter::menu_cycle(void)
 {
@@ -117,6 +145,19 @@ int CRoadFighter::menu_cycle(void)
 				} /* if */ 
 			} /* for */ 
 		} else {
+			bool left_pressed=(keyboard[left_key] && !old_keyboard[left_key]) ||
+							  (keyboard[SDL_SCANCODE_LEFT] && !old_keyboard[SDL_SCANCODE_LEFT]);
+			bool right_pressed=(keyboard[right_key] && !old_keyboard[right_key]) ||
+							   (keyboard[SDL_SCANCODE_RIGHT] && !old_keyboard[SDL_SCANCODE_RIGHT]);
+			bool select_pressed=(keyboard[fire_key] && !old_keyboard[fire_key]) ||
+								(keyboard[SDL_SCANCODE_SPACE] && !old_keyboard[SDL_SCANCODE_SPACE]) ||
+								(keyboard[SDL_SCANCODE_RETURN] && !old_keyboard[SDL_SCANCODE_RETURN]);
+			/* Items whose value is changed in place with left/right (left
+			   would otherwise mean "back" in the menus): */
+			bool adjustable=(menu_current_menu==MENU_AUDIO && menu_item<=1) ||
+							(menu_current_menu==MENU_VIDEO && menu_item==0) ||
+							(menu_current_menu==MENU_CONTROLS && menu_item<=1);
+
 			if (keyboard[SDL_SCANCODE_DOWN] && !old_keyboard[SDL_SCANCODE_DOWN]) {
 				Sound_play(S_menu_move);
 				menu_item++;
@@ -128,8 +169,25 @@ int CRoadFighter::menu_cycle(void)
 			if (menu_item<0) menu_item=0;
 			if (menu_item>menu_nitems-1) menu_item=menu_nitems-1;
 
-			if ((keyboard[fire_key] && !old_keyboard[fire_key]) ||
-				(keyboard[SDL_SCANCODE_SPACE] && !old_keyboard[SDL_SCANCODE_SPACE]) ||
+			if (adjustable && (left_pressed || right_pressed ||
+							   (select_pressed && menu_current_menu!=MENU_AUDIO))) {
+				int dir=(left_pressed ? -1:1);
+
+				switch(menu_current_menu) {
+				case MENU_AUDIO:
+					if (menu_item==0) Sound_set_music_master(Sound_get_music_master()+dir);
+								 else Sound_set_sfx_master(Sound_get_sfx_master()+dir);
+					break;
+				case MENU_VIDEO:
+					set_fullscreen(!get_fullscreen());
+					break;
+				case MENU_CONTROLS:
+					if (menu_item==0) input1=next_input_device(input1,input2,dir);
+								 else input2=next_input_device(input2,input1,dir);
+					break;
+				} /* switch */
+				Sound_play(S_menu_move);
+			} else if (select_pressed ||
 				(keyboard[right_key] && !old_keyboard[right_key]) ||
 				(keyboard[left_key] && !old_keyboard[left_key]) ||
 				(keyboard[SDL_SCANCODE_ESCAPE] && !old_keyboard[SDL_SCANCODE_ESCAPE])) {
@@ -144,19 +202,30 @@ int CRoadFighter::menu_cycle(void)
 					menu_state=3;
 					menu_timmer=TEXT_EFFECT_LENGTH;
 					break;
-				case 1:
-					if (menu_item==2) {
+				case MENU_OPTIONS:
+					if (menu_item==3) {
 						if (game_remake_extras) game_remake_extras=false;
 										   else game_remake_extras=true;
 					} /* if */ 
-					if (menu_item==3) {
+					if (menu_item==4) {
 						default_configuration();
 					} /* if */ 
 
-					if (menu_item==0 || menu_item==1 || menu_item==4) {
+					if (menu_item==0 || menu_item==1 || menu_item==2 || menu_item==5) {
 						menu_state=3;
 						menu_timmer=TEXT_EFFECT_LENGTH;
 					} /* if */ 
+					break;
+				case MENU_AUDIO:
+				case MENU_VIDEO:
+				case MENU_CONTROLS:
+					/* Left/escape may have just jumped to BACK, so check the
+					   item again instead of trusting "adjustable": */
+					if (menu_item==menu_nitems-1 ||
+						(menu_current_menu==MENU_CONTROLS && menu_item>=2)) {
+						menu_state=3;
+						menu_timmer=TEXT_EFFECT_LENGTH;
+					} /* if */
 					break;
 				case 2:
 					if (menu_item==0) menu_redefining_key=0;
@@ -221,32 +290,61 @@ int CRoadFighter::menu_cycle(void)
 					menu_timmer=EFFECT_LENGTH;
 				} /* if */ 
 				break;
-			case 1:
+			case MENU_OPTIONS:
 				if (menu_item==0) {
 					menu_state=1;
 					menu_timmer=0;
-					menu_redefining_key=-1;
-					menu_current_menu=2;
+					menu_current_menu=MENU_AUDIO;
 				} /* if */ 
 				if (menu_item==1) {
 					menu_state=1;
 					menu_timmer=0;
+					menu_current_menu=MENU_VIDEO;
+				} /* if */ 
+				if (menu_item==2) {
+					menu_state=1;
+					menu_timmer=0;
+					menu_current_menu=MENU_CONTROLS;
+				} /* if */ 
+				if (menu_item==5) {
+					menu_state=1;
+					menu_timmer=0;
+					menu_current_menu=MENU_MAIN;
+					save_configuration();
+				} /* if */ 
+				break;
+			case MENU_KEYS1:
+			case MENU_KEYS2:
+				if (menu_item==3) {
+					menu_state=1;
+					menu_timmer=0;
+					menu_current_menu=MENU_CONTROLS;
+				} /* if */ 
+				break;
+			case MENU_AUDIO:
+			case MENU_VIDEO:
+				/* The only non-adjustable item is BACK: */
+				menu_state=1;
+				menu_timmer=0;
+				menu_current_menu=MENU_OPTIONS;
+				break;
+			case MENU_CONTROLS:
+				if (menu_item==2) {
+					menu_state=1;
+					menu_timmer=0;
 					menu_redefining_key=-1;
-					menu_current_menu=3;
+					menu_current_menu=MENU_KEYS1;
+				} /* if */ 
+				if (menu_item==3) {
+					menu_state=1;
+					menu_timmer=0;
+					menu_redefining_key=-1;
+					menu_current_menu=MENU_KEYS2;
 				} /* if */ 
 				if (menu_item==4) {
 					menu_state=1;
 					menu_timmer=0;
-					menu_current_menu=0;
-					save_configuration();
-				} /* if */ 
-				break;
-			case 2:
-			case 3:
-				if (menu_item==3) {
-					menu_state=1;
-					menu_timmer=0;
-					menu_current_menu=1;
+					menu_current_menu=MENU_OPTIONS;
 				} /* if */ 
 				break;
 			case 4:
@@ -366,7 +464,46 @@ int CRoadFighter::menu_cycle(void)
 			menu_tittle_text=new char[strlen("OPTIONS:")+1];
 			strcpy(menu_tittle_text,"OPTIONS:");
 			delete menu_options_text;
-			sprintf(tmp,"PLAYER 1 KEYS\nPLAYER 2 KEYS\nEXTRAS: %s\nDEFAULT\nBACK\n",(game_remake_extras ? "ON":"OFF"));
+			sprintf(tmp,"AUDIO\nVIDEO\nCONTROLS\nEXTRAS: %s\nDEFAULT\nBACK\n",(game_remake_extras ? "ON":"OFF"));
+			menu_options_text=new char[strlen(tmp)+1];
+			strcpy(menu_options_text,tmp);
+			menu_nitems=6;
+		} /* if */ 
+
+		if (menu_current_menu==MENU_AUDIO) {
+			char tmp[256];
+			delete menu_tittle_text;
+			menu_tittle_text=new char[strlen("AUDIO:")+1];
+			strcpy(menu_tittle_text,"AUDIO:");
+			delete menu_options_text;
+			sprintf(tmp,"MUSIC : %i%%\nSOUND FX : %i%%\nBACK\n",
+					(Sound_get_music_master()*100)/SOUND_VOLUME_STEPS,
+					(Sound_get_sfx_master()*100)/SOUND_VOLUME_STEPS);
+			menu_options_text=new char[strlen(tmp)+1];
+			strcpy(menu_options_text,tmp);
+			menu_nitems=3;
+		} /* if */ 
+
+		if (menu_current_menu==MENU_VIDEO) {
+			char tmp[256];
+			delete menu_tittle_text;
+			menu_tittle_text=new char[strlen("VIDEO:")+1];
+			strcpy(menu_tittle_text,"VIDEO:");
+			delete menu_options_text;
+			sprintf(tmp,"FULLSCREEN : %s\nBACK\n",(get_fullscreen() ? "ON":"OFF"));
+			menu_options_text=new char[strlen(tmp)+1];
+			strcpy(menu_options_text,tmp);
+			menu_nitems=2;
+		} /* if */ 
+
+		if (menu_current_menu==MENU_CONTROLS) {
+			char tmp[256];
+			delete menu_tittle_text;
+			menu_tittle_text=new char[strlen("CONTROLS:")+1];
+			strcpy(menu_tittle_text,"CONTROLS:");
+			delete menu_options_text;
+			sprintf(tmp,"PLAYER 1 : %s\nPLAYER 2 : %s\nPLAYER 1 KEYS\nPLAYER 2 KEYS\nBACK\n",
+					input_device_name(input1),input_device_name(input2));
 			menu_options_text=new char[strlen(tmp)+1];
 			strcpy(menu_options_text,tmp);
 			menu_nitems=5;

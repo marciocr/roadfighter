@@ -96,13 +96,19 @@ CPlayerCarObject::CPlayerCarObject(int nx,int ny,List<CTile> *l,int first_tile,i
 	enginesound_track=0;
 	if (game->S_carengine != 0) {
 		enginesound_track=MIX_CreateTrack(mixer);
-		if (enginesound_track!=0) MIX_SetTrackAudio(enginesound_track,game->S_carengine);
+		if (enginesound_track!=0) {
+			MIX_SetTrackAudio(enginesound_track,game->S_carengine);
+			MIX_SetTrackGain(enginesound_track,Sound_sfx_gain());
+		}
 	}
 
 	skidsound_track=0;
 	if (game->S_carskid != 0) {
 		skidsound_track=MIX_CreateTrack(mixer);
-		if (skidsound_track!=0) MIX_SetTrackAudio(skidsound_track,game->S_carskid);
+		if (skidsound_track!=0) {
+			MIX_SetTrackAudio(skidsound_track,game->S_carskid);
+			MIX_SetTrackGain(skidsound_track,Sound_sfx_gain());
+		}
 	}
 
 	goal_reached=false;
