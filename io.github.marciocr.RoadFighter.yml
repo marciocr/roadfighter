@@ -12,7 +12,9 @@ finish-args:
   # Gamepad support (SDL3): the Flatpak sandbox does not expose /dev/input
   # by default, and there's no portal for raw joystick/gamepad access, so
   # SDL's Linux joystick backend can't see any controller without this.
-  - --device=all
+  # --device=input (Flatpak >= 1.15.6) grants just /dev/input instead of
+  # every device on the host.
+  - --device=input
 
 modules:
   - name: SDL3
