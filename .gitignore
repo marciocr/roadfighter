@@ -3,3 +3,6 @@ roadfighter
 .release-build/
 build-dir/
 .flatpak-builder/
+dist/
+build-appimage/
+build-deps/

@@ -24,6 +24,7 @@
 #else
 #include <sys/time.h>
 #include <time.h>
+#include <unistd.h>
 #endif
 
 #include <stdio.h>
@@ -102,6 +103,34 @@ bool get_fullscreen(void)
 {
 	return fullscreen;
 } /* get_fullscreen */
+
+
+#ifndef _WIN32
+/* Os dados do jogo (graphics/, sound/, maps/, fonts/) sao abertos com
+   caminhos relativos ao diretorio atual. Se o jogo nao foi iniciado de
+   dentro da pasta dos dados (ex: AppImage, ou um atalho do menu), procura
+   os dados ao lado do executavel ou em ../share/roadfighter/ (layout de
+   instalacao usado pela AppImage) e entra nessa pasta. */
+static void chdir_to_game_data(void)
+{
+	const char *subdirs[]={"","../share/roadfighter/"};
+	const char *base;
+	char dir[1024],probe[1100];
+	unsigned int i;
+
+	if (access("graphics/title.jpg",R_OK)==0) return;
+	base=SDL_GetBasePath();
+	if (base==0) return;
+	for(i=0;i<sizeof(subdirs)/sizeof(subdirs[0]);i++) {
+		snprintf(dir,sizeof(dir),"%s%s",base,subdirs[i]);
+		snprintf(probe,sizeof(probe),"%sgraphics/title.jpg",dir);
+		if (access(probe,R_OK)==0) {
+			if (chdir(dir)!=0) output_debug_message("Couldn't enter game data dir %s\n",dir);
+			return;
+		} /* if */
+	} /* for */
+} /* chdir_to_game_data */
+#endif
 
 
 static void present_screen(void)
@@ -228,6 +257,7 @@ int PASCAL WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 int main(int argc, char** argv)
 {
 	setupTickCount();
+	chdir_to_game_data();
 
 	{
 		int tmp;

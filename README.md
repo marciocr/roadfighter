@@ -91,6 +91,26 @@ Once the compilation has finished, execute the created binary:
 
     $ ./roadfighter
 
+Packages:
+---------
+
+**AppImage** (written to `dist/RoadFighter-x86_64.AppImage`):
+
+    $ scripts/build-appimage.sh --container
+
+This builds inside an Ubuntu 22.04 container (podman or docker), compiling
+SDL3 from source, so the AppImage also runs on older distributions. Without
+`--container` it uses the SDL3 libraries installed on your machine instead.
+
+**Flatpak** (needs `flatpak-builder` and the freedesktop 25.08 SDK):
+
+    $ flatpak-builder --user --install --force-clean build-dir io.github.marciocr.RoadFighter.yml
+
+Both packages are also built by GitHub Actions on every push and pull
+request (see the workflow run's artifacts); pushing a `v*` tag publishes
+them in a GitHub release. The SDL3 versions and build options for both come
+from the Flatpak manifest.
+
 License
 =======
 
