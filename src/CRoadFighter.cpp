@@ -209,8 +209,9 @@ bool CRoadFighter::cycle(void)
 	const bool *sdl_keyboard=SDL_GetKeyboardState(NULL);
 
 	for(i=0;i<SDL_SCANCODE_COUNT;i++) combined_keyboard[i]=sdl_keyboard[i];
-	Gamepad_apply_to_keys(combined_keyboard,left_key,right_key,fire_key,
-										 left2_key,right2_key,fire2_key);
+	Gamepad_apply_to_keys(combined_keyboard,state==MENU_STATE,
+						  input1,left_key,right_key,fire_key,
+						  input2,left2_key,right2_key,fire2_key);
 	keyboard = combined_keyboard;
 
 	switch(state) {

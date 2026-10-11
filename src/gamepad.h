@@ -30,14 +30,25 @@ void Gamepad_finalization(void);
 /* Call for every SDL event; opens/closes gamepads on hotplug. */
 void Gamepad_handle_event(const SDL_Event &event);
 
+/* Which input device drives a player (see the CONTROLS options menu).
+   The keyboard keys always work; choosing a gamepad adds that gamepad. */
+#define INPUT_KEYBOARD	0
+#define INPUT_GAMEPAD1	1
+#define INPUT_GAMEPAD2	2
+#define N_INPUT_DEVICES	3
+
+bool Gamepad_connected(int pad);
+
 /* The whole game reads input from a single bool[SDL_SCANCODE_COUNT] array
    (see CRoadFighter::keyboard). Instead of teaching every object/menu how
    to also read a gamepad, we fold connected gamepads into a mutable copy
-   of that same array: the first gamepad drives player 1's configured
-   left/right/fire keys, the second drives player 2's, and either one also
-   drives menu navigation (UP/DOWN), pause (F1) and back/escape. */
-void Gamepad_apply_to_keys(bool *keys,
-							int left_key1,int right_key1,int fire_key1,
-							int left_key2,int right_key2,int fire_key2);
+   of that same array: the gamepad chosen by each player (input1/input2,
+   one of INPUT_*) drives that player's configured left/right/fire keys,
+   and any gamepad drives pause (F1) and back/escape. When "menu" is true,
+   any gamepad also drives the arrow keys, RETURN (select) and ESCAPE, so
+   menus can be used even with a gamepad no player has chosen. */
+void Gamepad_apply_to_keys(bool *keys,bool menu,
+							int input1,int left_key1,int right_key1,int fire_key1,
+							int input2,int left_key2,int right_key2,int fire_key2);
 
 #endif

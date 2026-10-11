@@ -78,6 +78,7 @@ private:
 	/* keyboard: */ 
 	int left_key,right_key,fire_key;
 	int left2_key,right2_key,fire2_key;
+	int input1,input2;	/* INPUT_KEYBOARD/INPUT_GAMEPAD1/INPUT_GAMEPAD2 (see gamepad.h) */
 
 	/* Graphic data: */ 
 	SDL_Surface *disclaimer_sfc,*retroremakes_sfc;

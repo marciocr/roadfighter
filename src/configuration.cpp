@@ -32,6 +32,10 @@
 #include "CGame.h"
 #include "CRoadFighter.h"
 #include "filehandling.h"
+#include "gamepad.h"
+
+extern void set_fullscreen(bool f);
+extern bool get_fullscreen(void);
 
 void CRoadFighter::load_configuration(void)
 {
@@ -71,6 +75,24 @@ void CRoadFighter::load_configuration(void)
 	if (a==1) game_remake_extras=true;
 		 else game_remake_extras=false;
 
+	/* Opcoes de audio/video/controle: vieram depois, entao arquivos de
+	   configuracao antigos nao as tem -- nesse caso ficam os valores
+	   padrao so pra elas, sem perder as teclas ja configuradas. */
+	Sound_set_music_master(SOUND_VOLUME_STEPS);
+	Sound_set_sfx_master(SOUND_VOLUME_STEPS);
+	input1=INPUT_GAMEPAD1;
+	input2=INPUT_GAMEPAD2;
+	if (2==fscanf(fp,"%i %i",&a,&b)) {
+		Sound_set_music_master(a);
+		Sound_set_sfx_master(b);
+	} /* if */
+	if (1==fscanf(fp,"%i",&a)) set_fullscreen(a==1);
+	if (2==fscanf(fp,"%i %i",&a,&b)) {
+		if (a>=0 && a<N_INPUT_DEVICES) input1=a;
+		if (b>=0 && b<N_INPUT_DEVICES) input2=b;
+	} /* if */
+
+	fclose(fp);
 } /* CRoadFighter::load_configuration */ 
 
 
@@ -84,6 +106,9 @@ void CRoadFighter::save_configuration(void)
 	fprintf(fp,"%i %i %i\n",left2_key,right2_key,fire2_key);
 	if (game_remake_extras) fprintf(fp,"1\n");
 					   else fprintf(fp,"0\n");
+	fprintf(fp,"%i %i\n",Sound_get_music_master(),Sound_get_sfx_master());
+	fprintf(fp,"%i\n",get_fullscreen() ? 1:0);
+	fprintf(fp,"%i %i\n",input1,input2);
 	fclose(fp);
 } /* CRoadFighter::save_configuration */ 
 
@@ -99,5 +124,11 @@ void CRoadFighter::default_configuration(void)
 	fire2_key=SDL_SCANCODE_LSHIFT;
 
 	game_remake_extras=true;
+
+	Sound_set_music_master(SOUND_VOLUME_STEPS);
+	Sound_set_sfx_master(SOUND_VOLUME_STEPS);
+	set_fullscreen(false);
+	input1=INPUT_GAMEPAD1;
+	input2=INPUT_GAMEPAD2;
 } /* CRoadFighter::default_configuration */ 
 
