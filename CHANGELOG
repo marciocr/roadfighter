@@ -1,3 +1,15 @@
+**version: 1.1.0**
+ * Gamepad support (SDL3), with hotplug, for up to two players
+ * New options menus: AUDIO (music and sound effects volume), VIDEO
+   (fullscreen) and CONTROLS (input device per player, key redefinition)
+ * The game is scaled to the window, which can now be resized; fullscreen
+   shows the whole game, letterboxed
+ * Credits now separate this version, the original remake and the
+   original Konami game; fixed garbled accented names in the credits
+ * The game finds its data files when started from another directory
+ * AppImage build, and GitHub Actions building the AppImage and Flatpak
+ * Flatpak: only /dev/input is exposed (--device=input) instead of all devices
+
 **version: 1.0.0**
  * Acquired originally from the official site and holder by copyright
  * Starting project continuity in version 1.0.0
