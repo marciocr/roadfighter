@@ -15,6 +15,9 @@ finish-args:
   # --device=input (Flatpak >= 1.15.6) grants just /dev/input instead of
   # every device on the host.
   - --device=input
+  # The game keeps its settings and high score in ~/.roadfighter/. Inside
+  # the sandbox $HOME is temporary, so without this they were lost on exit.
+  - --persist=.roadfighter
 
 modules:
   - name: SDL3
