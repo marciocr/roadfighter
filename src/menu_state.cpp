@@ -449,10 +449,10 @@ int CRoadFighter::menu_cycle(void)
 
 	if (menu_state==1 || menu_state==2 || menu_state==3) {
 		if (menu_current_menu==0) {
-			delete menu_tittle_text;
+			delete[] menu_tittle_text;
 			menu_tittle_text=new char[strlen("PLAY SELECT:")+1];
 			strcpy(menu_tittle_text,"PLAY SELECT:");
-			delete menu_options_text;
+			delete[] menu_options_text;
 			menu_options_text=new char[strlen("ONE PLAYER\nTWO PLAYERS\nOPTIONS\nQUIT\n")+1];
 			strcpy(menu_options_text,"ONE PLAYER\nTWO PLAYERS\nOPTIONS\nQUIT\n");
 			menu_nitems=4;
@@ -460,10 +460,10 @@ int CRoadFighter::menu_cycle(void)
 
 		if (menu_current_menu==1) {
 			char tmp[256];
-			delete menu_tittle_text;
+			delete[] menu_tittle_text;
 			menu_tittle_text=new char[strlen("OPTIONS:")+1];
 			strcpy(menu_tittle_text,"OPTIONS:");
-			delete menu_options_text;
+			delete[] menu_options_text;
 			sprintf(tmp,"AUDIO\nVIDEO\nCONTROLS\nEXTRAS: %s\nDEFAULT\nBACK\n",(game_remake_extras ? "ON":"OFF"));
 			menu_options_text=new char[strlen(tmp)+1];
 			strcpy(menu_options_text,tmp);
@@ -472,10 +472,10 @@ int CRoadFighter::menu_cycle(void)
 
 		if (menu_current_menu==MENU_AUDIO) {
 			char tmp[256];
-			delete menu_tittle_text;
+			delete[] menu_tittle_text;
 			menu_tittle_text=new char[strlen("AUDIO:")+1];
 			strcpy(menu_tittle_text,"AUDIO:");
-			delete menu_options_text;
+			delete[] menu_options_text;
 			sprintf(tmp,"MUSIC : %i%%\nSOUND FX : %i%%\nBACK\n",
 					(Sound_get_music_master()*100)/SOUND_VOLUME_STEPS,
 					(Sound_get_sfx_master()*100)/SOUND_VOLUME_STEPS);
@@ -486,10 +486,10 @@ int CRoadFighter::menu_cycle(void)
 
 		if (menu_current_menu==MENU_VIDEO) {
 			char tmp[256];
-			delete menu_tittle_text;
+			delete[] menu_tittle_text;
 			menu_tittle_text=new char[strlen("VIDEO:")+1];
 			strcpy(menu_tittle_text,"VIDEO:");
-			delete menu_options_text;
+			delete[] menu_options_text;
 			sprintf(tmp,"FULLSCREEN : %s\nBACK\n",(get_fullscreen() ? "ON":"OFF"));
 			menu_options_text=new char[strlen(tmp)+1];
 			strcpy(menu_options_text,tmp);
@@ -498,10 +498,10 @@ int CRoadFighter::menu_cycle(void)
 
 		if (menu_current_menu==MENU_CONTROLS) {
 			char tmp[256];
-			delete menu_tittle_text;
+			delete[] menu_tittle_text;
 			menu_tittle_text=new char[strlen("CONTROLS:")+1];
 			strcpy(menu_tittle_text,"CONTROLS:");
-			delete menu_options_text;
+			delete[] menu_options_text;
 			sprintf(tmp,"PLAYER 1 : %s\nPLAYER 2 : %s\nPLAYER 1 KEYS\nPLAYER 2 KEYS\nBACK\n",
 					input_device_name(input1),input_device_name(input2));
 			menu_options_text=new char[strlen(tmp)+1];
@@ -511,10 +511,10 @@ int CRoadFighter::menu_cycle(void)
 
 		if (menu_current_menu==2) {
 			char tmp[256];
-			delete menu_tittle_text;
+			delete[] menu_tittle_text;
 			menu_tittle_text=new char[strlen("PLAYER 1:")+1];
 			strcpy(menu_tittle_text,"PLAYER 1:");
-			delete menu_options_text;
+			delete[] menu_options_text;
 			sprintf(tmp,"RIGHT : %s\nLEFT : %s\nFIRE : %s\nBACK\n",
 					(menu_redefining_key==0 ? "":strupr(SDL_GetScancodeName((SDL_Scancode)right_key))),
 					(menu_redefining_key==1 ? "":strupr(SDL_GetScancodeName((SDL_Scancode)left_key))),
@@ -525,10 +525,10 @@ int CRoadFighter::menu_cycle(void)
 		} /* if */ 
 		if (menu_current_menu==3) {
 			char tmp[256];
-			delete menu_tittle_text;
+			delete[] menu_tittle_text;
 			menu_tittle_text=new char[strlen("PLAYER 2:")+1];
 			strcpy(menu_tittle_text,"PLAYER 2:");
-			delete menu_options_text;
+			delete[] menu_options_text;
 			sprintf(tmp,"RIGHT : %s\nLEFT : %s\nFIRE : %s\nBACK\n",
 					(menu_redefining_key==3 ? "":strupr(SDL_GetScancodeName((SDL_Scancode)right2_key))),
 					(menu_redefining_key==4 ? "":strupr(SDL_GetScancodeName((SDL_Scancode)left2_key))),
@@ -539,10 +539,10 @@ int CRoadFighter::menu_cycle(void)
 		} /* if */ 
 		if (menu_current_menu==4) {
 			char tmp[256];
-			delete menu_tittle_text;
+			delete[] menu_tittle_text;
 			menu_tittle_text=new char[strlen("ONE PLAYER:")+1];
 			strcpy(menu_tittle_text,"ONE PLAYER:");
-			delete menu_options_text;
+			delete[] menu_options_text;
 			sprintf(tmp,"LEVEL A\nLEVEL B\nLEVEL C\nBACK\n");
 			menu_options_text=new char[strlen(tmp)+1];
 			strcpy(menu_options_text,tmp);
@@ -550,10 +550,10 @@ int CRoadFighter::menu_cycle(void)
 		} /* if */ 
 		if (menu_current_menu==5) {
 			char tmp[256];
-			delete menu_tittle_text;
+			delete[] menu_tittle_text;
 			menu_tittle_text=new char[strlen("TWO PLAYERS:")+1];
 			strcpy(menu_tittle_text,"TWO PLAYERS:");
-			delete menu_options_text;
+			delete[] menu_options_text;
 			sprintf(tmp,"LEVEL A\nLEVEL B\nLEVEL C\nBACK\n");
 			menu_options_text=new char[strlen(tmp)+1];
 			strcpy(menu_options_text,tmp);

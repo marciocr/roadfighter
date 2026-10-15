@@ -37,7 +37,7 @@ class CObject {
 public:
 	CObject();	
 	CObject(int x,int y,CTile *t,int constitution,class CGame *game);	/* Simple constructor */ 
-	~CObject(void);
+	virtual ~CObject(void);
 
 	virtual bool cycle(const bool *keyboard,const bool *old_keyboard);
 	virtual void draw(int sx,int sy,SDL_Surface *screen);

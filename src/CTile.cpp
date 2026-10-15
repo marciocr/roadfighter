@@ -271,7 +271,7 @@ TILE_SOURCE::TILE_SOURCE(char *filename)
 
 TILE_SOURCE::~TILE_SOURCE(void)
 {
-	delete fname;
+	delete[] fname;
 	fname=0;
 	SDL_DestroySurface(sfc);
 } /* TILE_SOURCE::~TILE_SOURCE */ 
@@ -292,7 +292,7 @@ bool TILE_SOURCE::load(FILE *fp)
 
 	if (1!=fscanf(fp,"%s",tmp)) return false;
 
-	if (fname!=0) delete fname;
+	if (fname!=0) delete[] fname;
 	fname=new char[strlen(tmp)+1];
 	strcpy(fname,tmp);
 	tmp_sfc=IMG_Load(fname);

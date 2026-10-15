@@ -184,6 +184,9 @@ CRoadFighter::~CRoadFighter(void)
 	SDL_DestroySurface(credits2_sfc);
 	if (levelintro_sfc!=0) SDL_DestroySurface(levelintro_sfc);
 
+	delete[] menu_tittle_text;
+	delete[] menu_options_text;
+
 	delete minicar1_tile;
 	delete minicar2_tile;
 

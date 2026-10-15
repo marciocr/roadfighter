@@ -64,7 +64,7 @@ CObject::~CObject(void)
 	int i;
 
 	for(i=0;i<ntiles;i++) tiles[i]=0;
-	delete tiles;
+	delete[] tiles;
 
 } /* CObject::~CObject */ 
 

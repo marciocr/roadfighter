@@ -323,6 +323,9 @@ CGame::~CGame(void)
 	SDL_DestroySurface(goal_sfc);
 	SDL_DestroySurface(obstacles_sfc);
 	SDL_DestroySurface(pause_sfc);
+	SDL_DestroySurface(enemy_cars);
+	SDL_DestroySurface(fuel_sfc);
+	SDL_DestroySurface(explosion_sfc);
 
 	while(!focusing_objects.EmptyP()) focusing_objects.ExtractIni();
 
