@@ -57,7 +57,7 @@ int SCREEN_X=512;
 int SCREEN_Y=384;
 const int COLOUR_DEPTH=32;
 const char *application_name="Road Fighter Remake";
-#define GAME_VERSION "1.1.0"
+#define GAME_VERSION "0.5.0"
 
 #ifdef _WIN32
 bool fullscreen=true;

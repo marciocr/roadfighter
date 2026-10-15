@@ -1,16 +1,24 @@
-**version: 1.1.0**
+**version: 0.5.0** (SDL3 port; previous 1.0.0/1.1.0 releases folded in)
+ * Ported to SDL3, packaged as Flatpak and AppImage, built by GitHub Actions
  * Gamepad support (SDL3), with hotplug, for up to two players
  * New options menus: AUDIO (music and sound effects volume), VIDEO
-   (fullscreen) and CONTROLS (input device per player, key redefinition)
- * The game is scaled to the window, which can now be resized; fullscreen
+   (fullscreen, 2D filter) and CONTROLS (input device per player, key
+   redefinition)
+ * 2D upscaling filters shared with the F-1 Spirit and Maze of Galious
+   remakes: Scale2x, 2xSaI, hq2x, xBR, OmniScale and Lanczos (OpenGL)
+ * The game is scaled to the window, which can be resized; fullscreen
    shows the whole game, letterboxed
  * Credits now separate this version, the original remake and the
    original Konami game; fixed garbled accented names in the credits
+ * Fixed a black box around the player car while it blinks
+ * Fixed memory errors found by AddressSanitizer (and a leak of about
+   340 KB per level)
+ * Wayland: the window shows the game's icon and name in the taskbar
  * The game finds its data files when started from another directory
- * AppImage build, and GitHub Actions building the AppImage and Flatpak
- * Flatpak: only /dev/input is exposed (--device=input) instead of all devices
+ * Flatpak: settings and high score are kept between runs, and only
+   /dev/input is exposed (--device=input) instead of all devices
 
-**version: 1.0.0**
+**upstream version: 1.0.0** (Carlos Donizete Froes, 2018)
  * Acquired originally from the official site and holder by copyright
  * Starting project continuity in version 1.0.0
  * Removed 'build' and 'fonts' directory from original source

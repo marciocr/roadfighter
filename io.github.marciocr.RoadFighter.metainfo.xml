@@ -32,20 +32,16 @@
     <content_attribute id="violence-cartoon">mild</content_attribute>
   </content_rating>
   <releases>
-    <release version="1.1.0" date="2026-10-11">
+    <release version="0.5.0" date="2026-10-15">
       <description>
-        <p>Gamepads and new options menus.</p>
+        <p>SDL3 port of the Road Fighter remake.</p>
         <ul>
           <li>Gamepad support for up to two players</li>
-          <li>Options for music and sound effects volume, fullscreen and each player's input device</li>
+          <li>Options for music and sound effects volume, fullscreen, 2D filters and each player's input device</li>
+          <li>2D upscaling filters: Scale2x, 2xSaI, hq2x, xBR, OmniScale and Lanczos</li>
           <li>The game scales to the window, which can be resized</li>
-          <li>Revised credits</li>
+          <li>Revised credits and several bug fixes</li>
         </ul>
-      </description>
-    </release>
-    <release version="1.0.0" date="2026-08-16">
-      <description>
-        <p>SDL3 port of the Road Fighter remake, packaged as a Flatpak.</p>
       </description>
     </release>
   </releases>
