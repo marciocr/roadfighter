@@ -24,7 +24,7 @@ OBJS = \
 	$(SRCDIR)/konami_state.o		$(SRCDIR)/loadmg2.o			\
 	$(SRCDIR)/menu_state.o			$(SRCDIR)/playing_state.o		\
 	$(SRCDIR)/presentation_state.o		$(SRCDIR)/quick_tables.o		\
-	$(SRCDIR)/sound.o								\
+	$(SRCDIR)/postfx.o			$(SRCDIR)/sound.o			\
 	$(SRCDIR)/main.o
 
 CXX = g++
@@ -42,7 +42,7 @@ CXX = g++
 # devolve string vazia pra TODOS -- isso quebraria a build mesmo pros
 # pacotes (sdl3/sdl3-image/sdl3-ttf) que ja estao instalados e funcionam.
 CXXFLAGS += -std=gnu++14 -g3 -O3 -fPIE -D_FORTIFY_SOURCE=2 `pkg-config --cflags sdl3 sdl3-image sdl3-ttf` `pkg-config --cflags sdl3-mixer 2>/dev/null`
-LDFLAGS += -fPIE -pie -lm `pkg-config --libs sdl3 sdl3-image sdl3-ttf` `pkg-config --libs sdl3-mixer 2>/dev/null`
+LDFLAGS += -fPIE -pie -lm -lGL `pkg-config --libs sdl3 sdl3-image sdl3-ttf` `pkg-config --libs sdl3-mixer 2>/dev/null`
 
 RM = rm -rf
 ECHO = echo

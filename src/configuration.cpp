@@ -33,6 +33,7 @@
 #include "CRoadFighter.h"
 #include "filehandling.h"
 #include "gamepad.h"
+#include "postfx.h"
 
 extern void set_fullscreen(bool f);
 extern bool get_fullscreen(void);
@@ -91,6 +92,8 @@ void CRoadFighter::load_configuration(void)
 		if (a>=0 && a<N_INPUT_DEVICES) input1=a;
 		if (b>=0 && b<N_INPUT_DEVICES) input2=b;
 	} /* if */
+	postfx_set_filter(FILTER_OFF);
+	if (1==fscanf(fp,"%i",&a)) postfx_set_filter(a);
 
 	fclose(fp);
 } /* CRoadFighter::load_configuration */ 
@@ -109,6 +112,7 @@ void CRoadFighter::save_configuration(void)
 	fprintf(fp,"%i %i\n",Sound_get_music_master(),Sound_get_sfx_master());
 	fprintf(fp,"%i\n",get_fullscreen() ? 1:0);
 	fprintf(fp,"%i %i\n",input1,input2);
+	fprintf(fp,"%i\n",video_filter);
 	fclose(fp);
 } /* CRoadFighter::save_configuration */ 
 
@@ -128,6 +132,7 @@ void CRoadFighter::default_configuration(void)
 	Sound_set_music_master(SOUND_VOLUME_STEPS);
 	Sound_set_sfx_master(SOUND_VOLUME_STEPS);
 	set_fullscreen(false);
+	postfx_set_filter(FILTER_OFF);
 	input1=INPUT_GAMEPAD1;
 	input2=INPUT_GAMEPAD2;
 } /* CRoadFighter::default_configuration */ 

@@ -43,6 +43,7 @@
 #include "CRoadFighter.h"
 #include "auxiliar.h"
 #include "gamepad.h"
+#include "postfx.h"
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
@@ -155,7 +156,7 @@ int CRoadFighter::menu_cycle(void)
 			/* Items whose value is changed in place with left/right (left
 			   would otherwise mean "back" in the menus): */
 			bool adjustable=(menu_current_menu==MENU_AUDIO && menu_item<=1) ||
-							(menu_current_menu==MENU_VIDEO && menu_item==0) ||
+							(menu_current_menu==MENU_VIDEO && menu_item<=1) ||
 							(menu_current_menu==MENU_CONTROLS && menu_item<=1);
 
 			if (keyboard[SDL_SCANCODE_DOWN] && !old_keyboard[SDL_SCANCODE_DOWN]) {
@@ -179,7 +180,8 @@ int CRoadFighter::menu_cycle(void)
 								 else Sound_set_sfx_master(Sound_get_sfx_master()+dir);
 					break;
 				case MENU_VIDEO:
-					set_fullscreen(!get_fullscreen());
+					if (menu_item==0) set_fullscreen(!get_fullscreen());
+								 else postfx_set_filter((video_filter+dir+N_FILTERS)%N_FILTERS);
 					break;
 				case MENU_CONTROLS:
 					if (menu_item==0) input1=next_input_device(input1,input2,dir);
@@ -490,10 +492,11 @@ int CRoadFighter::menu_cycle(void)
 			menu_tittle_text=new char[strlen("VIDEO:")+1];
 			strcpy(menu_tittle_text,"VIDEO:");
 			delete[] menu_options_text;
-			sprintf(tmp,"FULLSCREEN : %s\nBACK\n",(get_fullscreen() ? "ON":"OFF"));
+			sprintf(tmp,"FULLSCREEN : %s\nFILTER : %s\nBACK\n",(get_fullscreen() ? "ON":"OFF"),
+					postfx_filter_name(video_filter));
 			menu_options_text=new char[strlen(tmp)+1];
 			strcpy(menu_options_text,tmp);
-			menu_nitems=2;
+			menu_nitems=3;
 		} /* if */ 
 
 		if (menu_current_menu==MENU_CONTROLS) {

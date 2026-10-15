@@ -29,7 +29,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_opengl.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <SDL3_mixer/SDL_mixer.h>
 
@@ -41,6 +43,7 @@
 #include "CRoadFighter.h"
 #include "auxiliar.h"
 #include "gamepad.h"
+#include "postfx.h"
 
 #include "debug.h"
 
@@ -72,12 +75,15 @@ int init_time=0;
 SDL_Window *main_window=0;
 SDL_Surface *screen_sfc;
 /* O jogo desenha sempre numa surface fixa de SCREEN_X x SCREEN_Y
-   (screen_sfc); a cada frame ela e copiada pra esta textura e escalada
-   pela SDL_Renderer pro tamanho real da janela (com barras pretas pra
-   manter a proporcao). Assim tela cheia e janela redimensionada funcionam
-   sem o jogo precisar saber o tamanho de verdade da tela. */
-static SDL_Renderer *main_renderer=0;
-static SDL_Texture *screen_texture=0;
+   (screen_sfc); a cada frame ela e copiada pra uma textura OpenGL e
+   escalada pro tamanho real da janela (com barras pretas pra manter a
+   proporcao), passando pelo filtro 2D escolhido no menu VIDEO (ver
+   postfx.cpp, o mesmo do F-1 Spirit e do Maze of Galious). Assim tela
+   cheia e janela redimensionada funcionam sem o jogo precisar saber o
+   tamanho de verdade da tela. */
+static SDL_GLContext gl_context=0;
+static GLuint screen_tex=0;
+static Uint32 *frame_buffer=0;
 CRoadFighter *game=0;
 
 /* SDL3: as antigas flags SDL_HWSURFACE/SDL_DOUBLEBUF eram sobre a
@@ -136,11 +142,57 @@ static void chdir_to_game_data(void)
 
 static void present_screen(void)
 {
-	SDL_UpdateTexture(screen_texture, 0, screen_sfc->pixels, screen_sfc->pitch);
-	SDL_SetRenderDrawColor(main_renderer, 0, 0, 0, 255);
-	SDL_RenderClear(main_renderer);
-	SDL_RenderTexture(main_renderer, screen_texture, 0, 0);
-	SDL_RenderPresent(main_renderer);
+	int window_w=SCREEN_X,window_h=SCREEN_Y,w,h,y;
+
+	/* Copia o quadro pra textura, linha de baixo primeiro (a ordem do
+	   OpenGL, que os filtros esperam). screen_sfc e XRGB8888, que na
+	   memoria fica B,G,R,X: por isso GL_BGRA. */
+	for(y=0;y<SCREEN_Y;y++) {
+		memcpy(frame_buffer+(SCREEN_Y-1-y)*SCREEN_X,
+			   (Uint8 *)screen_sfc->pixels+y*screen_sfc->pitch,SCREEN_X*4);
+	} /* for */
+	glBindTexture(GL_TEXTURE_2D,screen_tex);
+	glPixelStorei(GL_UNPACK_ALIGNMENT,4);
+	glTexSubImage2D(GL_TEXTURE_2D,0,0,0,SCREEN_X,SCREEN_Y,GL_BGRA,GL_UNSIGNED_BYTE,frame_buffer);
+	glBindTexture(GL_TEXTURE_2D,0);
+
+	SDL_GetWindowSizeInPixels(main_window,&window_w,&window_h);
+
+	/* Onde a imagem vai na janela: 4:3, centralizada, barras pretas em volta. */
+	if (window_w*SCREEN_Y>window_h*SCREEN_X) {
+		w=window_h*SCREEN_X/SCREEN_Y;
+		h=window_h;
+	} else {
+		w=window_w;
+		h=window_w*SCREEN_Y/SCREEN_X;
+	} /* if */
+
+	glViewport(0,0,window_w,window_h);
+	glClearColor(0,0,0,1);
+	glClear(GL_COLOR_BUFFER_BIT);
+	if (postfx_active()) {
+		postfx_draw(screen_tex,SCREEN_X,SCREEN_Y,(window_w-w)/2,(window_h-h)/2,w,h);
+	} else {
+		glViewport((window_w-w)/2,(window_h-h)/2,w,h);
+
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D,screen_tex);
+		glBegin(GL_QUADS);
+		glTexCoord2f(0,0); glVertex2f(-1,-1);
+		glTexCoord2f(1,0); glVertex2f(1,-1);
+		glTexCoord2f(1,1); glVertex2f(1,1);
+		glTexCoord2f(0,1); glVertex2f(-1,1);
+		glEnd();
+		glBindTexture(GL_TEXTURE_2D,0);
+		glDisable(GL_TEXTURE_2D);
+	} /* if */
+
+	SDL_GL_SwapWindow(main_window);
 } /* present_screen */
 
 
@@ -173,7 +225,7 @@ SDL_Surface* initializeSDL(Uint64 moreflags)
 	   em um so passo) foi substituido por dois passos explicitos:
 	   1) criar a janela com SDL_CreateWindow
 	   2) criar a superficie de desenho (aqui, uma surface propria que e
-	      escalada pra janela via SDL_Renderer -- ver present_screen())
+	      escalada pra janela via OpenGL -- ver present_screen())
 	   COLOUR_DEPTH tambem deixou de existir como parametro. */
 	/* A janela abre no dobro da resolucao do jogo se couber na tela (512x384
 	   e minusculo num monitor atual), e pode ser redimensionada. */
@@ -183,8 +235,12 @@ SDL_Surface* initializeSDL(Uint64 moreflags)
 
 		if (SDL_GetDisplayUsableBounds(SDL_GetPrimaryDisplay(), &usable) &&
 			usable.w>=SCREEN_X*2 && usable.h>=SCREEN_Y*2) scale=2;
+		SDL_GL_SetAttribute(SDL_GL_RED_SIZE,8);
+		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,8);
+		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,8);
+		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,1);
 		main_window = SDL_CreateWindow(application_name, SCREEN_X*scale, SCREEN_Y*scale,
-									   flags|SDL_WINDOW_RESIZABLE);
+									   flags|SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
 	}
 	if (main_window == 0) {
 		output_debug_message("Couldn't create window: %s\n", SDL_GetError());
@@ -192,21 +248,31 @@ SDL_Surface* initializeSDL(Uint64 moreflags)
 	}
 	if (fullscreen) SDL_HideCursor();
 
-	main_renderer = SDL_CreateRenderer(main_window, NULL);
-	if (main_renderer == 0) {
-		output_debug_message("Couldn't create renderer: %s\n", SDL_GetError());
+	gl_context = SDL_GL_CreateContext(main_window);
+	if (gl_context == 0) {
+		output_debug_message("Couldn't create the OpenGL context: %s\n", SDL_GetError());
 		exit(-1);
 	}
-	SDL_SetRenderLogicalPresentation(main_renderer, SCREEN_X, SCREEN_Y,
-									 SDL_LOGICAL_PRESENTATION_LETTERBOX);
+	SDL_GL_MakeCurrent(main_window, gl_context);
+	/* Sem vsync: o ritmo do jogo (35 quadros/s, ver REDRAWING_PERIOD) e
+	   controlado pelo loop principal, e esperar o vsync de 60Hz a cada
+	   quadro o deixaria mais lento. */
+	SDL_GL_SetSwapInterval(0);
+	output_debug_message("OpenGL: %s / %s\n",(const char *)glGetString(GL_RENDERER),(const char *)glGetString(GL_VERSION));
 
-	screen_texture = SDL_CreateTexture(main_renderer, SDL_PIXELFORMAT_XRGB8888,
-									   SDL_TEXTUREACCESS_STREAMING, SCREEN_X, SCREEN_Y);
-	if (screen_texture != 0) SDL_SetTextureScaleMode(screen_texture, SDL_SCALEMODE_PIXELART);
+	frame_buffer = new Uint32[SCREEN_X*SCREEN_Y];
+	glGenTextures(1,&screen_tex);
+	glBindTexture(GL_TEXTURE_2D,screen_tex);
+	glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA8,SCREEN_X,SCREEN_Y,0,GL_BGRA,GL_UNSIGNED_BYTE,0);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_2D,0);
 
 	SDL_Surface *screen = SDL_CreateSurface(SCREEN_X, SCREEN_Y, SDL_PIXELFORMAT_XRGB8888);
 
-	if (screen == NULL || screen_texture == NULL) {
+	if (screen == NULL) {
 		output_debug_message("Couldn't create screen surface (%ix%i)", SCREEN_X, SCREEN_Y);
 	    if (fullscreen) output_debug_message(",fullscreen,");
 	    output_debug_message(" video mode: %s\n",SDL_GetError ());
@@ -232,8 +298,13 @@ SDL_Surface* initializeSDL(Uint64 moreflags)
 void finalizeSDL()
 {
 	Gamepad_finalization();
-	if (screen_texture!=0) SDL_DestroyTexture(screen_texture);
-	if (main_renderer!=0) SDL_DestroyRenderer(main_renderer);
+	postfx_release();
+	if (screen_tex!=0) glDeleteTextures(1,&screen_tex);
+	screen_tex=0;
+	delete[] frame_buffer;
+	frame_buffer=0;
+	if (gl_context!=0) SDL_GL_DestroyContext(gl_context);
+	gl_context=0;
 	if (screen_sfc!=0) SDL_DestroySurface(screen_sfc);
 	TTF_Quit();
 //	Sound_release();

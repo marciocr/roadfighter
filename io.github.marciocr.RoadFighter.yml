@@ -79,11 +79,12 @@ modules:
       - make clean
       - make
       - install -Dm755 roadfighter /app/bin/roadfighter.bin
-      - install -d /app/bin/graphics /app/bin/sound /app/bin/maps /app/bin/fonts
+      - install -d /app/bin/graphics /app/bin/sound /app/bin/maps /app/bin/fonts /app/bin/shaders
       - cp -r graphics/. /app/bin/graphics/
       - cp -r sound/. /app/bin/sound/
       - cp -r maps/. /app/bin/maps/
       - cp -r fonts/. /app/bin/fonts/
+      - cp -r shaders/. /app/bin/shaders/
       - install -Dm755 roadfighter-wrapper.sh /app/bin/roadfighter
       - install -Dm644 io.github.marciocr.RoadFighter.desktop /app/share/applications/io.github.marciocr.RoadFighter.desktop
       - install -Dm644 io.github.marciocr.RoadFighter.metainfo.xml /app/share/metainfo/io.github.marciocr.RoadFighter.metainfo.xml

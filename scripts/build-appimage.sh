@@ -61,12 +61,12 @@ cp -r "$ROOT/Makefile" "$ROOT/src" "$BUILD/tree/"
 make -C "$BUILD/tree" clean
 make -C "$BUILD/tree" -j"$(nproc)"
 
-# The game finds its data in ../share/roadfighter/ relative to the binary
+# The game finds its data (and the filter shaders) in ../share/roadfighter/ relative to the binary
 # (see chdir_to_game_data() in src/main.cpp).
 APPDIR=$BUILD/AppDir
 install -Dm755 "$BUILD/tree/roadfighter" "$APPDIR/usr/bin/roadfighter"
 mkdir -p "$APPDIR/usr/share/roadfighter"
-cp -r "$ROOT/graphics" "$ROOT/sound" "$ROOT/maps" "$ROOT/fonts" "$APPDIR/usr/share/roadfighter/"
+cp -r "$ROOT/graphics" "$ROOT/sound" "$ROOT/maps" "$ROOT/fonts" "$ROOT/shaders" "$APPDIR/usr/share/roadfighter/"
 install -Dm644 "$ROOT/$APP_ID.desktop" "$APPDIR/usr/share/applications/$APP_ID.desktop"
 install -Dm644 "$ROOT/graphics/roadfighter.png" "$APPDIR/usr/share/icons/hicolor/256x256/apps/$APP_ID.png"
 
