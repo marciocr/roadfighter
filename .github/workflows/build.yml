@@ -43,10 +43,21 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v4
+      # Title from the tag (v0.5.0 -> "Road Fighter Remake 0.5.0"), notes
+      # from that version's CHANGELOG entry; fails if there is none.
+      - name: Release title and notes
+        id: notes
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          echo "title=Road Fighter Remake $version" >> "$GITHUB_OUTPUT"
+          python3 scripts/release-notes.py "$version" > release-notes.md
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
           merge-multiple: true
       - uses: softprops/action-gh-release@v2
         with:
+          name: ${{ steps.notes.outputs.title }}
+          body_path: release-notes.md
           files: artifacts/*

@@ -111,6 +111,12 @@ request (see the workflow run's artifacts); pushing a `v*` tag publishes
 them in a GitHub release. The SDL3 versions and build options for both come
 from the Flatpak manifest.
 
+To release version X.Y.Z, add a `**version: X.Y.Z**` entry to the
+`CHANGELOG` (and a `<release>` to the metainfo), then push the tag `vX.Y.Z`.
+The release is titled "Road Fighter Remake X.Y.Z" and its notes are that
+CHANGELOG entry (see `scripts/release-notes.py`); the workflow fails if the
+entry is missing.
+
 License
 =======
 
