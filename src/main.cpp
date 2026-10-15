@@ -54,6 +54,7 @@ int SCREEN_X=512;
 int SCREEN_Y=384;
 const int COLOUR_DEPTH=32;
 const char *application_name="Road Fighter Remake";
+#define GAME_VERSION "1.1.0"
 
 #ifdef _WIN32
 bool fullscreen=true;
@@ -273,6 +274,11 @@ int main(int argc, char** argv)
 	SDL_Event event;
     bool quit = false;
 
+
+	/* No Wayland o compositor associa a janela ao arquivo .desktop (icone
+	   e nome na barra de tarefas) pelo app ID; sem isso aparece um icone
+	   generico. Precisa ser chamado antes de SDL_Init. */
+	SDL_SetAppMetadata(application_name, GAME_VERSION, "io.github.marciocr.RoadFighter");
 
 	time=init_time=GetTickCount();
 	screen_sfc = initializeSDL((fullscreen ? SDL_WINDOW_FULLSCREEN : 0));
