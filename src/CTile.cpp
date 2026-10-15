@@ -134,7 +134,10 @@ void CTile::draw_shaded(int x,int y,SDL_Surface *dest,int factor,int red,int gre
 		d.y=0;
 		d.w=r.w;
 		d.h=r.h;
-		tmp=SDL_ConvertSurface(orig,screen_sfc->format);
+		/* Copia mantendo o formato com alpha do tile: converter pro formato da
+		   tela (XRGB, sem alpha) perdia a transparencia e o sprite aparecia
+		   dentro de um quadrado preto (ex: o carro piscando no inicio). */
+		tmp=SDL_DuplicateSurface(orig);
 		surface_shader(tmp,float(factor)/100.0F,red,green,blue,alpha);
 		d.x=x;
 		d.y=y;
@@ -156,7 +159,10 @@ void CTile::draw_bicolor(int x,int y,SDL_Surface *dest,int factor,int r1,int g1,
 		d.y=0;
 		d.w=r.w;
 		d.h=r.h;
-		tmp=SDL_ConvertSurface(orig,screen_sfc->format);
+		/* Copia mantendo o formato com alpha do tile: converter pro formato da
+		   tela (XRGB, sem alpha) perdia a transparencia e o sprite aparecia
+		   dentro de um quadrado preto (ex: o carro piscando no inicio). */
+		tmp=SDL_DuplicateSurface(orig);
 		surface_bicolor(tmp,float(factor)/100.0F,r1,g1,b1,a1,r2,g2,b2,a2);
 		d.x=x;
 		d.y=y;
