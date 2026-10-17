@@ -60,6 +60,7 @@ public:
 	void get_fuels(List<int> *l);
 	void get_positions(List<float> *l);
 	void get_scores(List<int> *l);
+	void pause(void);	/* pauses; F1/START unpauses, as usual */
 	int get_game_timmer(void) {return game_timmer;};
 
 

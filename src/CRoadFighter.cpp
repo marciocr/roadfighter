@@ -212,6 +212,12 @@ CRoadFighter::~CRoadFighter(void)
 
 
 
+void CRoadFighter::pause_game(void)
+{
+	if (state==PLAYING_STATE && game!=0) game->pause();
+} /* CRoadFighter::pause_game */
+
+
 bool CRoadFighter::cycle(void)
 {
 	int i,old_state=state;

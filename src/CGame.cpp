@@ -440,6 +440,12 @@ bool CGame::level_completed(void)
 
 
 
+void CGame::pause(void)
+{
+	paused=true;
+} /* CGame::pause */
+
+
 bool CGame::cycle(const bool *keyboard,const bool *old_keyboard)
 {
 	List<CObject> l;

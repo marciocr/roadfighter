@@ -65,6 +65,9 @@ public:
 	void save_configuration(void);
 	void default_configuration(void);
 
+	/* Pauses a race in progress (e.g. when the window loses focus). */
+	void pause_game(void);
+
 private:
 
 	void scoreboard_draw(int x,int y,SDL_Surface *screen);

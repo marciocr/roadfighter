@@ -438,6 +438,14 @@ FIXME: the code below is a big copy/paste; it should be in a separate function i
                 case SDL_EVENT_GAMEPAD_REMOVED:
                     Gamepad_handle_event(event);
                     break;
+
+                /* Pausa a corrida quando o jogador sai da janela (troca de
+                   janela, minimiza): senao o carro seguia sozinho e batia.
+                   Volta com F1/START, como a pausa normal. */
+                case SDL_EVENT_WINDOW_FOCUS_LOST:
+                case SDL_EVENT_WINDOW_MINIMIZED:
+                    if (game!=0) game->pause_game();
+                    break;
             } /* switch */
         } /* while */
 
