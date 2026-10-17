@@ -343,6 +343,10 @@ void finalizeSDL()
 int main(int argc, char** argv)
 {
 	setupTickCount();
+	/* O jogo original nunca semeava o rand() (a SGE tinha sge_Randomize(),
+	   mas ninguem a chamava), entao o trafego e os obstaculos seguiam a
+	   mesma sequencia a cada execucao. */
+	srand((unsigned int)time(NULL));
 	chdir_to_game_data();
 
 	{
