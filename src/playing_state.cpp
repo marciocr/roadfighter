@@ -102,6 +102,8 @@ int CRoadFighter::playing_cycle(void)
 	} /* if */ 
 
 	if (!game->cycle(keyboard,old_keyboard)) {
+		/* The race is over (level completed, game over or quit): */
+		save_high_score();
 		if (game->level_completed()) {
 			current_level++;
 

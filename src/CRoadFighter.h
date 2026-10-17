@@ -65,6 +65,10 @@ public:
 	void save_configuration(void);
 	void default_configuration(void);
 
+	/* The high score is kept in its own file, RoadFighter.hi: */
+	void load_high_score(void);
+	void save_high_score(void);
+
 	/* Pauses a race in progress (e.g. when the window loses focus). */
 	void pause_game(void);
 
@@ -76,6 +80,7 @@ private:
 	int state,state_timmer;
 	int current_level;
 	int high_score;
+	int saved_high_score;	/* what RoadFighter.hi holds, to skip needless writes */
 	CGame *game;
 
 	/* keyboard: */ 

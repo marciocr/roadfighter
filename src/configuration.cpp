@@ -117,6 +117,34 @@ void CRoadFighter::save_configuration(void)
 } /* CRoadFighter::save_configuration */ 
 
 
+void CRoadFighter::load_high_score(void)
+{
+	FILE *fp;
+	int score;
+
+	high_score=0;
+	fp=f1open("RoadFighter.hi", "r", USERDATA);
+	if (fp!=0) {
+		if (1==fscanf(fp,"%i",&score) && score>0) high_score=score;
+		fclose(fp);
+	} /* if */
+	saved_high_score=high_score;
+} /* CRoadFighter::load_high_score */
+
+
+void CRoadFighter::save_high_score(void)
+{
+	FILE *fp;
+
+	if (high_score==saved_high_score) return;
+	fp=f1open("RoadFighter.hi", "w", USERDATA);
+	if (fp==0) return;
+	fprintf(fp,"%i\n",high_score);
+	fclose(fp);
+	saved_high_score=high_score;
+} /* CRoadFighter::save_high_score */
+
+
 void CRoadFighter::default_configuration(void)
 {
 	left_key=SDL_SCANCODE_LEFT;

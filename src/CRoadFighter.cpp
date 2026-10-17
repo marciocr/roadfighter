@@ -78,6 +78,7 @@ CRoadFighter::CRoadFighter(void)
 	menu_redefining_key=-1;
 
 	load_configuration();
+	load_high_score();
 
 	game_mode=0;
 
@@ -203,6 +204,7 @@ CRoadFighter::~CRoadFighter(void)
 	Sound_delete_sound(S_menu_in);
 	Sound_delete_sound(S_menu_out);
 
+	save_high_score();
 	if (replay_fp!=0) fclose(replay_fp);
 	replay_fp=0;
 
