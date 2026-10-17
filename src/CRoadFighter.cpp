@@ -69,8 +69,6 @@ CRoadFighter::CRoadFighter(void)
 	interlevel_timmer=0;
 	gameover_state=0;
 	gameover_timmer=0;
-	endsequence_state=0;
-	endsequence_timmer=0;
 	scoreboard_fade_timmer=0;
 
 	menu_tittle_text=0;

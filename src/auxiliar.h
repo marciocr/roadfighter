@@ -78,7 +78,6 @@ void surface_bicolor(SDL_Surface *surface,float factor,int r1,int g1,int b1,int 
    sge_transform() da biblioteca SGE. */
 void surface_rotozoom(SDL_Surface *src,SDL_Surface *dst,float angle,float xscale,float yscale,int px,int py,int qx,int qy);
 
-SDL_Surface *load_maskedimage(char *image,char *mask,char *path);
 
 void surface_automatic_alpha(SDL_Surface *sfc);
 void surface_bw(SDL_Surface *sfc,int threshold);

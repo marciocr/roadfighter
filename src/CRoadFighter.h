@@ -135,8 +135,6 @@ private:
 	int gameover_state;
 	int gameover_timmer;
 
-	int endsequence_state;
-	int endsequence_timmer;
 
 	bool playing_reachedend;
 

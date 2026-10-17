@@ -70,10 +70,6 @@ void Sound_set_sfx_master(int v);
 /* Ganho (0.0-1.0) pra quem cria suas proprias MIX_Track de efeito: */
 float Sound_sfx_gain(void);
 
-/* These functions are AGRESIVE! (i.e. they actually STOP SDL_mixer and restart it) */
-void Stop_playback(void);
-void Resume_playback(void);
-int Resume_playback(int nc,int nr);
 
 #endif
 

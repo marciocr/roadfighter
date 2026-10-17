@@ -30,10 +30,6 @@
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
-#ifdef KITSCHY_DEBUG_MEMORY
-#include "debug_memorymanager.h"
-#endif
-
 /* SDL3_mixer 3.x: a API antiga baseada em "canais" numerados globais
    (Mix_OpenAudio/Mix_Chunk/Mix_PlayChannel/Mix_Volume(canal,...)) foi
    substituida por um modelo de objetos: um MIX_Mixer (o dispositivo de
@@ -55,10 +51,6 @@ MIX_Audio *music_sound=0;
 MIX_Track *music_track=0;
 MIX_Track *track_pool[N_TRACK_POOL];
 int n_channels=-1;
-/* Guardamos o loop da musica atual so pra poder retomar a musica depois
-   de um Stop_playback()/Resume_playback() (que destroem e recriam a
-   track de musica do zero -- ver comentario em Resume_playback). */
-static int music_loops=0;
 /* Volumes escolhidos pelo jogador no menu AUDIO (0..SOUND_VOLUME_STEPS).
    Eles multiplicam o volume que o jogo pede em cada chamada (que continua
    na escala 0..MIX_MAX_VOLUME, inclusive nos fades de musica). */
@@ -209,47 +201,6 @@ void Sound_release(void)
 	} /* if */
 	sound_enabled=false;
 } /* Sound_release */
-
-
-void Stop_playback(void)
-{
-	if (sound_enabled) {
-		Sound_pause_music();
-		destroy_track_pool();
-		MIX_DestroyMixer(mixer); mixer=0;
-		MIX_Quit();
-		sound_enabled=false;
-	} /* if */
-} /* Stop_playback */
-
-void Resume_playback(void)
-{
-	Resume_playback(0,0);
-} /* Resume_playback */
-
-
-int Resume_playback(int nc,int nrc)
-{
-	int n=Sound_initialization(nc,nrc);
-	if (n!=-1) {
-		/* Stop_playback() destruiu o mixer inteiro (inclusive a track de
-		   musica), entao nao ha "pausa" de verdade pra retomar -- se havia
-		   uma musica carregada, reatribuimos ela a nova track e tocamos de
-		   novo desde o inicio, com o mesmo loop de antes. */
-		if (music_sound!=0) {
-			SDL_PropertiesID props;
-
-			MIX_SetTrackAudio(music_track,music_sound);
-			props=SDL_CreateProperties();
-			SDL_SetNumberProperty(props,MIX_PROP_PLAY_LOOPS_NUMBER,music_loops);
-			MIX_PlayTrack(music_track,props);
-			SDL_DestroyProperties(props);
-		} else {
-			Sound_unpause_music();
-		} /* if */
-	} /* if */
-	return n;
-} /* Resume_playback */
 
 
 /* a check to see if file is readable and greater than zero */
@@ -422,7 +373,6 @@ void Sound_create_music(char *f1,int loops)
 			SDL_PropertiesID props;
 
 			music_sound=Sound_create_stream(f1);
-			music_loops=loops;
 			MIX_SetTrackAudio(music_track,music_sound);
 			props=SDL_CreateProperties();
 			SDL_SetNumberProperty(props,MIX_PROP_PLAY_LOOPS_NUMBER,loops);

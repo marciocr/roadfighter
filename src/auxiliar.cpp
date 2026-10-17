@@ -89,57 +89,6 @@ void pause(unsigned int time)
 
 
 
-SDL_Surface *load_maskedimage(char *imagefile,char *maskfile,char *path)
-{
-	char name[256];
-
-	SDL_Surface *res;
-    	SDL_Surface *tmp;
-	SDL_Surface *mask;
-
-	sprintf(name,"%s%s",path,imagefile);
-	tmp=IMG_Load(name);
-	sprintf(name,"%s%s",path,imagefile);
-	mask=IMG_Load(name);
-
-    if (tmp==0 ||
-		mask==0) return mask;
-
-	res=SDL_ConvertSurface(tmp,screen_sfc->format);
-
-	/* Aplicar la m�scara: */
-	{
-		int x,y;
-		Uint8 r,g,b,a;
-		Uint32 v;
-		const SDL_PixelFormatDetails *res_fmt=SDL_GetPixelFormatDetails(res->format);
-
-		for(y=0;y<mask->h;y++) {
-			for(x=0;x<mask->w;x++) {
-				SDL_LockSurface(res);
-				v=getpixel(res,x,y);
-				SDL_UnlockSurface(res);
-				SDL_GetRGBA(v,res_fmt,SDL_GetSurfacePalette(res),&r,&g,&b,&a);
-				SDL_LockSurface(mask);
-				v=getpixel(mask,x,y);
-				SDL_UnlockSurface(mask);
-				if (v!=0) a=255;
-					 else a=0;
-				v=SDL_MapRGBA(res_fmt,SDL_GetSurfacePalette(res),r,g,b,a);
-				SDL_LockSurface(res);
-				putpixel(res,x,y,v);
-				SDL_UnlockSurface(res);
-			} /* for */
-		} /* for */
-	}
-
-	SDL_DestroySurface(tmp);
-	SDL_DestroySurface(mask);
-
-	return res;
-} /* load_maskedimage */ 
-
-
 void putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 {
 	SDL_Rect clip;

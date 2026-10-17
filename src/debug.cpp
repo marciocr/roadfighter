@@ -25,9 +25,6 @@
 
 #include "filehandling.h"
 
-#ifdef KITSCHY_DEBUG_MEMORY
-#include "debug_memorymanager.h"
-#endif
 
 FILE *fp = 0;
 
