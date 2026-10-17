@@ -15,7 +15,7 @@
    340 KB per level)
  * Wayland: the window shows the game's icon and name in the taskbar
  * The game finds its data files when started from another directory
- * Flatpak: settings and high score are kept between runs, and only
+ * Flatpak: settings are kept between runs, and only
    /dev/input is exposed (--device=input) instead of all devices
 
 **upstream version: 1.0.0** (Carlos Donizete Froes, 2018)
