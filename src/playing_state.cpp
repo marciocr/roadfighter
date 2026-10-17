@@ -37,97 +37,24 @@
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
-bool record_replay=false;
-bool load_replay=false;
-
 extern int start_level;
 
 int CRoadFighter::playing_cycle(void)
 {
-	if (state_timmer==0) {
-		if (record_replay) {
-			unsigned int seed;
-			replay_fp=f1open("replay.txt", "w+", USERDATA);
-			seed=(unsigned int)time(NULL);
-			fprintf(replay_fp,"%u\n",seed);
-			srand(seed);
-		} else {
-			if (load_replay) {
-				unsigned int seed;
-				replay_fp=f1open("replay.txt", "r+", USERDATA);
-				while(fscanf(replay_fp,"%u",&seed));
-				srand(seed);
-			} /* if */ 
-		} /* if */ 
-	} /* if */ 
-
-	if (record_replay) {
-		int i;
-		for(i=0;i<SDL_SCANCODE_COUNT;i++) {
-			if (keyboard[i] && !old_keyboard[i]) fprintf(replay_fp,"1 %i\n",i);
-			if (!keyboard[i] && old_keyboard[i]) fprintf(replay_fp,"0 %i\n",i);
-		} /* for */ 
-		fprintf(replay_fp,"-1\n");
-	} else {
-		if (load_replay) {
-			/* SDL3: SDL_GetKeyboardState() agora devolve um buffer
-			   somente-leitura (const bool*), entao nao da mais pra
-			   "falsificar" teclas escrevendo direto nele como antes.
-			   Em vez disso, apontamos "keyboard" para um buffer proprio
-			   e mutavel preenchido com o replay -- keyboard e um ponteiro
-			   (nao-const), so o que ele aponta e const, entao reatribuir
-			   o ponteiro continua valido, e o loop de old_keyboard[] em
-			   CRoadFighter::cycle() (que le a partir de keyboard) segue
-			   funcionando exatamente como antes. */
-			static bool replay_keyboard[SDL_SCANCODE_COUNT];
-			int v,v2;
-			do{
-				if (1!=fscanf(replay_fp,"%i",&v)) {
-					fclose(replay_fp);
-					replay_fp=0;
-					return GAMEOVER_STATE;
-				} /* if */
-				if (v!=-1) {
-					if (1!=fscanf(replay_fp,"%i",&v2)) {
-						fclose(replay_fp);
-						replay_fp=0;
-						return GAMEOVER_STATE;
-					} /* if */
-					if (v==1) replay_keyboard[v2]=true;
-					if (v==0) replay_keyboard[v2]=false;
-				} /* if */
-			} while(v!=-1);
-			keyboard=replay_keyboard;
-		} /* if */
-	} /* if */ 
-
 	if (!game->cycle(keyboard,old_keyboard)) {
 		/* The race is over (level completed, game over or quit): */
 		save_high_score();
 		if (game->level_completed()) {
 			current_level++;
-
-			if (record_replay || load_replay) {
-				fclose(replay_fp);
-				replay_fp=0;
-			} /* if */ 
 			return INTERLEVEL_STATE;
 		} else {
 			if (game->backspace_pressed) {
-				if (record_replay || load_replay) {
-					fclose(replay_fp);
-					replay_fp=0;
-				} /* if */ 
 				delete game;
 				game=0;
 				current_level=start_level;
 				return INTERLEVEL_STATE;
 			} else {
 				gameover_state=0;
-				if (record_replay || load_replay) {
-					fclose(replay_fp);
-					replay_fp=0;
-				} /* if */ 
 				return GAMEOVER_STATE;
 			} /* if */ 
 		} /* if */ 

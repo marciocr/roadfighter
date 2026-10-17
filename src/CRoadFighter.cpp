@@ -157,8 +157,6 @@ CRoadFighter::CRoadFighter(void)
 	S_menu_in=Sound_create_sound("sound/logo_in");
 	S_menu_out=Sound_create_sound("sound/logo_out");
 
-	replay_fp=0;
-
 	output_debug_message("CRoadFighter: constructor done.\n");
 
 } /* CRoadFighter::CRoadFighter */ 
@@ -205,8 +203,6 @@ CRoadFighter::~CRoadFighter(void)
 	Sound_delete_sound(S_menu_out);
 
 	save_high_score();
-	if (replay_fp!=0) fclose(replay_fp);
-	replay_fp=0;
 
 	output_debug_message("CRoadFighter: destructor done.\n");
 
