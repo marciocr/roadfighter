@@ -21,12 +21,10 @@
 #ifndef MOG_AUXILIAR
 #define MOG_AUXILIAR
 
-#ifndef _WIN32
 
 #define min(a,b) ((a)<(b) ? (a) : (b))
 #define max(a,b) ((a)>(b) ? (a) : (b))
 
-#endif
 //#define abs(a) ((a)<0 ? (-(a)) : (a))
 
 
@@ -54,7 +52,6 @@
 
 #endif
 
-#ifndef _WIN32
 #ifndef HAVE_STRLWR
 
 char *strlwr (char *str);
@@ -62,7 +59,6 @@ char *strlwr (char *str);
 #endif
 void setupTickCount();
 long GetTickCount();
-#endif
 void pause(unsigned int time);
 
 

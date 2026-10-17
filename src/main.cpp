@@ -18,14 +18,9 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 
-#ifdef _WIN32
-#include <windows.h>
-#include <windowsx.h>
-#else
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,11 +54,7 @@ const int COLOUR_DEPTH=32;
 const char *application_name="Road Fighter Remake";
 #define GAME_VERSION "0.5.0"
 
-#ifdef _WIN32
-bool fullscreen=true;
-#else
 bool fullscreen=false;
-#endif
 
 int init_time=0;
 
@@ -150,7 +141,6 @@ int get_window_scale(void)
 } /* get_window_scale */
 
 
-#ifndef _WIN32
 /* Os dados do jogo (graphics/, sound/, maps/, fonts/) sao abertos com
    caminhos relativos ao diretorio atual. Se o jogo nao foi iniciado de
    dentro da pasta dos dados (ex: AppImage, ou um atalho do menu), procura
@@ -175,7 +165,6 @@ static void chdir_to_game_data(void)
 		} /* if */
 	} /* for */
 } /* chdir_to_game_data */
-#endif
 
 
 static void present_screen(void)
@@ -351,19 +340,6 @@ void finalizeSDL()
 
 
 
-#ifdef _WIN32
-int PASCAL WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
-                    LPSTR lpCmdLine, int nCmdShow)
-{
-	{
-		int tmp;
-		if (1==sscanf(lpCmdLine,"%i",&tmp)) {
-			start_level=tmp;
-			if (start_level<1 || start_level>6) start_level=1;
-		} /* if */
-	}
-
-#else
 int main(int argc, char** argv)
 {
 	setupTickCount();
@@ -377,7 +353,6 @@ int main(int argc, char** argv)
 			if (start_level<1 || start_level>6) start_level=1;
 		} /* if */
 	}
-#endif
 
 	int time,act_time;
 	SDL_Event event;
@@ -423,34 +398,7 @@ int main(int argc, char** argv)
 							quit=true;
 						}
 					}
-#ifdef __APPLE__
-                    // different quit shortcut on OSX: apple+Q
-                    if (event.key.key == SDLK_Q) {
-                        SDL_Keymod modifiers;
-                        modifiers = SDL_GetModState();
-                        if ((modifiers&SDL_KMOD_GUI) != 0) {
-                            quit = true;
-                        }
-                    }
-#endif
-					// fullscreen
-/*
-FIXME: the code below is a big copy/paste; it should be in a separate function in stead
-*/
-
-#ifdef __APPLE__
-					if (event.key.key == SDLK_F) {
-						SDL_Keymod modifiers;
-
-						modifiers=SDL_GetModState();
-
-						if ((modifiers&SDL_KMOD_GUI) != 0) {
-							/* Toogle FULLSCREEN mode: */
-							set_fullscreen(!fullscreen);
-						} /* if */
-					} /* if */
-#endif
-
+					// fullscreen (Alt+Enter)
 					if (event.key.key==SDLK_RETURN) {
 						SDL_Keymod modifiers;
 

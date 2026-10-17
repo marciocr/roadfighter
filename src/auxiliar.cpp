@@ -18,13 +18,8 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 
-#ifdef _WIN32
-#include <windows.h>
-#include <windowsx.h>
-#else
 #include <sys/time.h>
 #include <time.h>
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include "ctype.h"
@@ -42,7 +37,6 @@
    (mesma solucao ja usada em CRoadFighter.cpp). */
 extern SDL_Surface *screen_sfc;
 
-#ifndef _WIN32
 #ifndef HAVE_STRLWR
 
 char *strlwr (char *str)
@@ -84,7 +78,6 @@ long GetTickCount()
 	return diff.tv_sec*1000 + diff.tv_usec/1000;
 }
 
-#endif
 
 
 void pause(unsigned int time)

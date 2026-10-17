@@ -18,13 +18,8 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 
-#ifdef _WIN32
-#include <windows.h>
-#include <windowsx.h>
-#else
 #include <sys/time.h>
 #include <time.h>
-#endif
 #include "math.h"
 
 #include <SDL3/SDL.h>
