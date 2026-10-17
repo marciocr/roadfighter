@@ -37,6 +37,8 @@
 
 extern void set_fullscreen(bool f);
 extern bool get_fullscreen(void);
+extern void set_window_scale(int scale);
+extern int get_window_scale(void);
 
 void CRoadFighter::load_configuration(void)
 {
@@ -94,6 +96,7 @@ void CRoadFighter::load_configuration(void)
 	} /* if */
 	postfx_set_filter(FILTER_OFF);
 	if (1==fscanf(fp,"%i",&a)) postfx_set_filter(a);
+	if (1==fscanf(fp,"%i",&a)) set_window_scale(a);
 
 	fclose(fp);
 } /* CRoadFighter::load_configuration */ 
@@ -113,6 +116,7 @@ void CRoadFighter::save_configuration(void)
 	fprintf(fp,"%i\n",get_fullscreen() ? 1:0);
 	fprintf(fp,"%i %i\n",input1,input2);
 	fprintf(fp,"%i\n",video_filter);
+	fprintf(fp,"%i\n",get_window_scale());
 	fclose(fp);
 } /* CRoadFighter::save_configuration */ 
 
@@ -160,6 +164,7 @@ void CRoadFighter::default_configuration(void)
 	Sound_set_music_master(SOUND_VOLUME_STEPS);
 	Sound_set_sfx_master(SOUND_VOLUME_STEPS);
 	set_fullscreen(false);
+	set_window_scale(2);
 	postfx_set_filter(FILTER_OFF);
 	input1=INPUT_GAMEPAD1;
 	input2=INPUT_GAMEPAD2;

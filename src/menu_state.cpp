@@ -53,6 +53,9 @@ const int TEXT_EFFECT_LENGTH=16;
 extern int start_level;
 extern void set_fullscreen(bool f);
 extern bool get_fullscreen(void);
+extern void set_window_scale(int scale);
+extern int get_window_scale(void);
+extern int max_window_scale(void);
 
 /* Menus (menu_current_menu): */
 enum {MENU_MAIN=0, MENU_OPTIONS, MENU_KEYS1, MENU_KEYS2, MENU_ONE_PLAYER, MENU_TWO_PLAYERS,
@@ -156,7 +159,7 @@ int CRoadFighter::menu_cycle(void)
 			/* Items whose value is changed in place with left/right (left
 			   would otherwise mean "back" in the menus): */
 			bool adjustable=(menu_current_menu==MENU_AUDIO && menu_item<=1) ||
-							(menu_current_menu==MENU_VIDEO && menu_item<=1) ||
+							(menu_current_menu==MENU_VIDEO && menu_item<=2) ||
 							(menu_current_menu==MENU_CONTROLS && menu_item<=1);
 
 			if (keyboard[SDL_SCANCODE_DOWN] && !old_keyboard[SDL_SCANCODE_DOWN]) {
@@ -181,7 +184,14 @@ int CRoadFighter::menu_cycle(void)
 					break;
 				case MENU_VIDEO:
 					if (menu_item==0) set_fullscreen(!get_fullscreen());
-								 else postfx_set_filter((video_filter+dir+N_FILTERS)%N_FILTERS);
+					if (menu_item==1) {
+						/* 1x .. the largest that fits, wrapping around: */
+						int scale=get_window_scale()+dir;
+						if (scale<1) scale=max_window_scale();
+						if (scale>max_window_scale()) scale=1;
+						set_window_scale(scale);
+					} /* if */
+					if (menu_item==2) postfx_set_filter((video_filter+dir+N_FILTERS)%N_FILTERS);
 					break;
 				case MENU_CONTROLS:
 					if (menu_item==0) input1=next_input_device(input1,input2,dir);
@@ -492,11 +502,11 @@ int CRoadFighter::menu_cycle(void)
 			menu_tittle_text=new char[strlen("VIDEO:")+1];
 			strcpy(menu_tittle_text,"VIDEO:");
 			delete[] menu_options_text;
-			sprintf(tmp,"FULLSCREEN : %s\nFILTER : %s\nBACK\n",(get_fullscreen() ? "ON":"OFF"),
-					postfx_filter_name(video_filter));
+			sprintf(tmp,"FULLSCREEN : %s\nWINDOW SIZE : %iX\nFILTER : %s\nBACK\n",(get_fullscreen() ? "ON":"OFF"),
+					get_window_scale(),postfx_filter_name(video_filter));
 			menu_options_text=new char[strlen(tmp)+1];
 			strcpy(menu_options_text,tmp);
-			menu_nitems=3;
+			menu_nitems=4;
 		} /* if */ 
 
 		if (menu_current_menu==MENU_CONTROLS) {

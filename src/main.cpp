@@ -112,6 +112,44 @@ bool get_fullscreen(void)
 } /* get_fullscreen */
 
 
+/* Tamanho da janela (menu VIDEO -> WINDOW SIZE), em multiplos de SCREEN_X x
+   SCREEN_Y, ate o maior que cabe na area util do monitor -- como no Maze
+   of Galious. Abre em 2x se couber. */
+static int window_scale=2;
+
+int max_window_scale(void)
+{
+	SDL_Rect r;
+	int scale=1;
+	SDL_DisplayID display=(main_window!=0 ? SDL_GetDisplayForWindow(main_window):SDL_GetPrimaryDisplay());
+
+	if (SDL_GetDisplayUsableBounds(display,&r)) {
+		while(SCREEN_X*(scale+1)<=r.w && SCREEN_Y*(scale+1)<=r.h) scale++;
+	} /* if */
+	return scale;
+} /* max_window_scale */
+
+
+void set_window_scale(int scale)
+{
+	int max_scale=max_window_scale();
+
+	if (scale>max_scale) scale=max_scale;
+	if (scale<1) scale=1;
+	window_scale=scale;
+	if (main_window==0 || fullscreen) return;
+	SDL_SetWindowSize(main_window,SCREEN_X*window_scale,SCREEN_Y*window_scale);
+	SDL_SetWindowPosition(main_window,SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED);
+	SDL_SyncWindow(main_window);
+} /* set_window_scale */
+
+
+int get_window_scale(void)
+{
+	return window_scale;
+} /* get_window_scale */
+
+
 #ifndef _WIN32
 /* Os dados do jogo (graphics/, sound/, maps/, fonts/) sao abertos com
    caminhos relativos ao diretorio atual. Se o jogo nao foi iniciado de
@@ -227,14 +265,14 @@ SDL_Surface* initializeSDL(Uint64 moreflags)
 	   2) criar a superficie de desenho (aqui, uma surface propria que e
 	      escalada pra janela via OpenGL -- ver present_screen())
 	   COLOUR_DEPTH tambem deixou de existir como parametro. */
-	/* A janela abre no dobro da resolucao do jogo se couber na tela (512x384
-	   e minusculo num monitor atual), e pode ser redimensionada. */
+	/* A janela abre em window_scale (2x se couber na tela: 512x384 e
+	   minusculo num monitor atual; o tamanho salvo e aplicado quando a
+	   configuracao e carregada) e pode ser redimensionada. */
 	{
-		int scale=1;
-		SDL_Rect usable;
+		int scale=window_scale;
 
-		if (SDL_GetDisplayUsableBounds(SDL_GetPrimaryDisplay(), &usable) &&
-			usable.w>=SCREEN_X*2 && usable.h>=SCREEN_Y*2) scale=2;
+		if (scale>max_window_scale()) scale=max_window_scale();
+		window_scale=scale;
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE,8);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,8);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,8);
