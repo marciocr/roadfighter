@@ -80,8 +80,8 @@ int CRoadFighter::interlevel_cycle(void)
 			if (game_mode>=3) game_mode=3;
 		} /* if */ 
 
+		SDL_DestroySurface(scoreboard2_sfc);
 		if (current_level<6) {
-			SDL_DestroySurface(scoreboard2_sfc);
 			if (n_players>1) scoreboard2_sfc=IMG_Load("graphics/s_board12p.bmp");
 						else scoreboard2_sfc=IMG_Load("graphics/s_board11p.bmp");
 		} else {
