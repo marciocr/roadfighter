@@ -20,11 +20,10 @@
 
 #include <sys/time.h>
 #include <time.h>
-#define strupr(x) (x)
-// TODO: really find a replacement for strupr
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "math.h"
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
@@ -76,6 +75,19 @@ static int next_input_device(int input,int other,int dir)
 	} while(input!=INPUT_KEYBOARD && input==other);
 	return input;
 } /* next_input_device */
+
+/* Key name for the menus, in upper case like the rest of the menu text
+   (SDL gives "Left Shift", "Space", ...). */
+static const char *key_label(int scancode,char *buf,size_t size)
+{
+	const char *name=SDL_GetScancodeName((SDL_Scancode)scancode);
+	size_t i;
+
+	for(i=0;name[i]!=0 && i<size-1;i++) buf[i]=(char)toupper((unsigned char)name[i]);
+	buf[i]=0;
+	return buf;
+} /* key_label */
+
 
 int CRoadFighter::menu_cycle(void)
 {
@@ -518,29 +530,29 @@ int CRoadFighter::menu_cycle(void)
 		} /* if */ 
 
 		if (menu_current_menu==2) {
-			char tmp[256];
+			char tmp[256],kb0[64],kb1[64],kb2[64];
 			delete[] menu_tittle_text;
 			menu_tittle_text=new char[strlen("PLAYER 1:")+1];
 			strcpy(menu_tittle_text,"PLAYER 1:");
 			delete[] menu_options_text;
 			sprintf(tmp,"RIGHT : %s\nLEFT : %s\nFIRE : %s\nBACK\n",
-					(menu_redefining_key==0 ? "":strupr(SDL_GetScancodeName((SDL_Scancode)right_key))),
-					(menu_redefining_key==1 ? "":strupr(SDL_GetScancodeName((SDL_Scancode)left_key))),
-					(menu_redefining_key==2 ? "":strupr(SDL_GetScancodeName((SDL_Scancode)fire_key))));
+					(menu_redefining_key==0 ? "":key_label(right_key,kb0,sizeof(kb0))),
+					(menu_redefining_key==1 ? "":key_label(left_key,kb1,sizeof(kb1))),
+					(menu_redefining_key==2 ? "":key_label(fire_key,kb2,sizeof(kb2))));
 			menu_options_text=new char[strlen(tmp)+1];
 			strcpy(menu_options_text,tmp);
 			menu_nitems=4;
 		} /* if */ 
 		if (menu_current_menu==3) {
-			char tmp[256];
+			char tmp[256],kb0[64],kb1[64],kb2[64];
 			delete[] menu_tittle_text;
 			menu_tittle_text=new char[strlen("PLAYER 2:")+1];
 			strcpy(menu_tittle_text,"PLAYER 2:");
 			delete[] menu_options_text;
 			sprintf(tmp,"RIGHT : %s\nLEFT : %s\nFIRE : %s\nBACK\n",
-					(menu_redefining_key==3 ? "":strupr(SDL_GetScancodeName((SDL_Scancode)right2_key))),
-					(menu_redefining_key==4 ? "":strupr(SDL_GetScancodeName((SDL_Scancode)left2_key))),
-					(menu_redefining_key==5 ? "":strupr(SDL_GetScancodeName((SDL_Scancode)fire2_key))));
+					(menu_redefining_key==3 ? "":key_label(right2_key,kb0,sizeof(kb0))),
+					(menu_redefining_key==4 ? "":key_label(left2_key,kb1,sizeof(kb1))),
+					(menu_redefining_key==5 ? "":key_label(fire2_key,kb2,sizeof(kb2))));
 			menu_options_text=new char[strlen(tmp)+1];
 			strcpy(menu_options_text,tmp);
 			menu_nitems=4;
