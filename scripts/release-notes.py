@@ -15,6 +15,7 @@ import sys
 DOWNLOADS = """## Downloads
 
 - **RoadFighter-x86_64.AppImage**: make it executable (`chmod +x`) and run it; needs glibc 2.34 or newer.
+- **RoadFighter-linux-x86_64.tar.gz**: extract it and run `./roadfighter.sh`; needs glibc 2.34 or newer.
 - **RoadFighter.flatpak**: `flatpak install --user RoadFighter.flatpak` (needs the `org.freedesktop.Platform//25.08` runtime from Flathub).
 """
 

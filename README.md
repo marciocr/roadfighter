@@ -94,13 +94,16 @@ Once the compilation has finished, execute the created binary:
 Packages:
 ---------
 
-**AppImage** (written to `dist/RoadFighter-x86_64.AppImage`):
+**AppImage and tar.gz** (written to `dist/RoadFighter-x86_64.AppImage` and
+`dist/RoadFighter-linux-x86_64.tar.gz`):
 
     $ scripts/build-appimage.sh --container
 
 This builds inside an Ubuntu 22.04 container (podman or docker), compiling
-SDL3 from source, so the AppImage also runs on older distributions. Without
+SDL3 from source, so the packages also run on older distributions. Without
 `--container` it uses the SDL3 libraries installed on your machine instead.
+The tar.gz holds the same files as the AppImage; extract it and run
+`./roadfighter.sh`.
 
 **Flatpak** (needs `flatpak-builder` and the freedesktop 25.08 SDK):
 

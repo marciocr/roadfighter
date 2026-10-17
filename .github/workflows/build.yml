@@ -15,12 +15,14 @@ jobs:
     container: ubuntu:22.04
     steps:
       - uses: actions/checkout@v4
-      - name: Build AppImage
+      - name: Build AppImage and tar.gz
         run: scripts/build-appimage.sh --setup
       - uses: actions/upload-artifact@v4
         with:
-          name: RoadFighter-x86_64.AppImage
-          path: dist/RoadFighter-x86_64.AppImage
+          name: RoadFighter-AppImage-and-tar.gz
+          path: |
+            dist/RoadFighter-x86_64.AppImage
+            dist/RoadFighter-linux-x86_64.tar.gz
           if-no-files-found: error
 
   flatpak:

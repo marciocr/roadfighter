@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Builds dist/RoadFighter-x86_64.AppImage.
+# Builds dist/RoadFighter-x86_64.AppImage and
+# dist/RoadFighter-linux-x86_64.tar.gz (the same files, unpacked, with a
+# launcher script).
 #
 #   scripts/build-appimage.sh              use the SDL3 libraries found by
 #                                          pkg-config on this machine
@@ -89,3 +91,15 @@ LDAI_OUTPUT="$DIST/RoadFighter-x86_64.AppImage" OUTPUT="$DIST/RoadFighter-x86_64
 		--output appimage
 
 echo "Created $DIST/RoadFighter-x86_64.AppImage"
+
+# tar.gz: the AppDir's usr/ tree (bin/, lib/ with the SDL3 libraries
+# linuxdeploy gathered, share/) plus a launcher, like Maze of Galious and
+# F-1 Spirit ship.
+PKG=RoadFighter-linux-x86_64
+rm -rf "$BUILD/$PKG"
+cp -a "$APPDIR/usr" "$BUILD/$PKG"
+install -m755 "$ROOT/packaging/roadfighter.sh" "$BUILD/$PKG/roadfighter.sh"
+cp "$ROOT/LICENSE" "$ROOT/README.md" "$BUILD/$PKG/"
+tar -C "$BUILD" -czf "$DIST/$PKG.tar.gz" "$PKG"
+
+echo "Created $DIST/$PKG.tar.gz"
